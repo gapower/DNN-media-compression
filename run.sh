@@ -1,16 +1,16 @@
 #!/bin/bash
 # Sample script for running 5E1 project
 
-home_dir=$(pwd)
+home_dir=$(/content/drive/'My Drive'/'Fifth Year'/MAI)
 
 # Activate virtual env for project
 # source $Git/Envs/5E1/bin/activate
 
 # cd to Project dir
-cd $Git/DNN-media-compression
+cd /content/drive/'My Drive'/'Fifth Year'/MAI/DNN-media-compression
 
 # Set up alias for training data location
-data_dir=$HOME/DNN-media-compression/DB
+data_dir=/content/drive/'My Drive'/'Fifth Year'/MAI/Databases
 
 # Set up runtime args
 # -ci = compressed_input
