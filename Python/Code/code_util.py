@@ -76,6 +76,7 @@ class DataManagement:
         :param dims: Image dimensions to be used, tuple - (height, width, channels)
         :return: Processed image
         """
+
         img = load_img(image_path)
         img = img_to_array(img, dtype=self.precision)
         img = self.check_dims(img, dims.get("dims", img.shape))
@@ -444,6 +445,7 @@ class DataManagement:
             os.path.join(self.compressed_data_path, f)
             for f in os.listdir(self.compressed_data_path)
         ]
+
         if validate:
             np.random.shuffle(files)
             split_size = int(len(files) * split)

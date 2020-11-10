@@ -129,7 +129,7 @@ class ModelClass:
             # epoch_steps = 144 // batch_size
             epoch_steps = 408 // batch_size
             val_steps = epoch_steps // batch_size
-        history = model.fit_generator(
+        history = model.fit(
             gen_function(test_files, batch_size=batch_size, **kwargs),
             steps_per_epoch=epoch_steps,
             epochs=run_epochs,
@@ -255,7 +255,7 @@ class Attempt1(ModelClass):
 
         model = Model(self.input, decode)
 
-        model.name = self.name
+        model._name = self.name
 
         model.c_space = self.c_space
 
@@ -1018,7 +1018,7 @@ class Attempt1_3D(ModelClass):
 
         model = Model(self.input, decode)
 
-        model.name = self.name
+        model._name = self.name
 
         model.c_space = self.c_space
 
@@ -1201,7 +1201,7 @@ class Attempt5(ModelClass):
 
         model = Model(self.input, decode)
 
-        model.name = self.name
+        model._name = self.name
 
         model.c_space = self.c_space
 

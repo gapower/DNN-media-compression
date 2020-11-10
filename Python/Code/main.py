@@ -54,7 +54,7 @@ def main(
         # Setting learning rate from average of last model
         # history.get("lr", [0.0005])[-1] to get last learning rate
         # params.get("lr", 0.0005) to get average learning rate
-        adam = optimizers.adam(
+        adam = optimizers.Adam(
             learning_rate=history.get("lr", [5e-4])[-1],
             beta_1=0.9,
             beta_2=0.999,

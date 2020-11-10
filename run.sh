@@ -4,13 +4,13 @@
 home_dir=$(pwd)
 
 # Activate virtual env for project
-source $Git/Envs/5E1/bin/activate
+# source $Git/Envs/5E1/bin/activate
 
 # cd to Project dir
-cd $Git/5E1
+cd $Git/DNN-media-compression
 
 # Set up alias for training data location
-data_dir=$HOME/5E1/DB
+data_dir=$HOME/DNN-media-compression/DB
 
 # Set up runtime args
 # -ci = compressed_input
@@ -21,7 +21,7 @@ oi=$data_dir/Video/Xiph/Colour/Original
 # -od = output_dir
 od=$data_dir/Out
 # -m = model (path or name)
-m="Attempt1"
+m="Attempt1_3D"
 # -nt = no-train [Include if only loading model output]
 nt="nt"
 # -s = sequences [Include for video]
@@ -38,10 +38,10 @@ cs="YUV"
 kl="kl"
 
 # Run script
-python Python/Code/main.py -ci "$ci" -oi "$oi" -od "$od" -m "$m" -e $e -b $b -d "$d" -cs "$cs"
+python Python/Code/main.py -ci "$ci" -oi "$oi" -od "$od" -m "$m" -s -e $e -b $b -d "$d" -cs "$cs"
 
 # Deactivate Python virtual env
-deactivate
+# deactivate
 
 # Return to home dir
 cd $home_dir
