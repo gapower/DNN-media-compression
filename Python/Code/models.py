@@ -1440,7 +1440,7 @@ class LSTM2(ModelClass):
 
         model = Model(self.input, decode)
 
-        model.name = self.name
+        model._name = self.name
 
         model.c_space = self.c_space
 
