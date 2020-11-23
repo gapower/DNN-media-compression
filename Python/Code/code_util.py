@@ -446,6 +446,8 @@ class DataManagement:
             for f in os.listdir(self.compressed_data_path)
         ]
 
+        print("\n\nFiles in Generator Function: " + str(files) + "\n\n")
+
         if validate:
             np.random.shuffle(files)
             split_size = int(len(files) * split)
