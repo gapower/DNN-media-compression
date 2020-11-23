@@ -15,13 +15,15 @@ data_dir=/content/drive/'My Drive'/'Fifth Year'/MAI/Databases
 # Set up runtime args
 # -ci = compressed_input
 ci=$data_dir/Video/Xiph/Colour/LowQual/H264
-# ci=$data_dir/Video/Xiph/Colour/No_deblocking/H264 
+#ci=$data_dir/Video/Xiph/Colour/LowQualTest
+# ci=$data_dir/Video/Xiph/Colour/No_deblocking/H264
 # -oi = original_input
+#oi=$data_dir/Video/Xiph/Colour/OriginalTest
 oi=$data_dir/Video/Xiph/Colour/Original
 # -od = output_dir
 od=$data_dir/Out
 # -m = model (path or name)
-m="Attempt1_3D"
+m="LSTM2"
 # -nt = no-train [Include if only loading model output]
 nt="nt"
 # -s = sequences [Include for video]

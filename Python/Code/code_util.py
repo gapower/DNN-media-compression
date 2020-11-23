@@ -522,6 +522,7 @@ class DataManagement:
         self.set_input_dims(dims[1:])
         while True:
             # Select files for the batch
+            print("\n\nFiles: " + files + "\n\n")
             batch_paths = np.random.choice(a=files, size=batch_size)
             batch_input = list()
             batch_output = list()

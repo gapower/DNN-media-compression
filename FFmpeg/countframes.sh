@@ -20,5 +20,4 @@ do
 	# f=${f%.*}  # Remove any extension
 	# Cmd
 	ffprobe -v error -count_frames -select_streams v:0 -show_entries stream=nb_read_frames -of default=nokey=1:noprint_wrappers=1 $Original/$bf
-	#ffmpeg -y -i $Original/$bf -map_metadata -1 -c:v libx264 -crf $quality -preset veryslow -profile:v main -pix_fmt yuv420p -movflags +faststart ${file_path}/${f}_${quality}${Extension}
 done
