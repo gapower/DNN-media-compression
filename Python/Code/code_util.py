@@ -118,6 +118,7 @@ class DataManagement:
         vid = list()
         frames = get_frames if get_frames is not None else range(int(self.frames))
         for i in frames:
+            print("\n\nnumber of frames: " + len(frames) + "\n\n")
             cap.set(1, i)
             ret, frame = cap.read()
             if not ret:
