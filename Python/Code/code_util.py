@@ -123,7 +123,7 @@ class DataManagement:
             ret, frame = cap.read()
             if not ret:
                 if get_frames is not None:
-                    #frame = np.copy(vid[-1])
+                    frame = np.copy(vid[-1])
                     frame.fill(0)
                 else:
                     break
@@ -435,7 +435,7 @@ class DataManagement:
         """
         self.input_dims.update({"dims": input_dims})
 
-    def generator_function(self, validate: bool = True, split: float = 0.5) -> tuple:
+    def generator_function(self, validate: bool = True, split: float = 0) -> tuple:
         """
         Perform train/validation split, return appropriate function for training sample generation
         :param validate: Boolean, create a validation set
