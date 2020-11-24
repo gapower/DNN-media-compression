@@ -435,7 +435,7 @@ class DataManagement:
         """
         self.input_dims.update({"dims": input_dims})
 
-    def generator_function(self, validate: bool = True, split: float = 0) -> tuple:
+    def generator_function(self, validate: bool = True, split: float = 0.5) -> tuple:
         """
         Perform train/validation split, return appropriate function for training sample generation
         :param validate: Boolean, create a validation set
