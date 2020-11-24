@@ -123,7 +123,7 @@ class DataManagement:
             ret, frame = cap.read()
             if not ret:
                 if get_frames is not None:
-                    frame = np.copy(vid[-1])
+                    #frame = np.copy(vid[-1])
                     frame.fill(0)
                 else:
                     break
