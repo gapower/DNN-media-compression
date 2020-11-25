@@ -1469,58 +1469,10 @@ class LSTMG(ModelClass):
         conv1 = ConvLSTM2D(
             filters=64, kernel_size=(3, 3), activation="relu", return_sequences=True
         )(self.input)
-        zpad1 = ZeroPadding3D(padding=(0, 2, 2))(conv1)
-        # Forward
-        forward_frames = self.crop(1, 0, mid_frame + 1)(zpad1)
-        conv2_1 = ConvLSTM2D(
-            filters=32, kernel_size=(3, 3), activation="relu", return_sequences=True
-        )(forward_frames)
-        mpool1_1 = MaxPooling3D(pool_size=(1, 2, 2))(conv2_1)
-        conv3_1 = ConvLSTM2D(
-            filters=64, kernel_size=(3, 3), activation="tanh", return_sequences=True
-        )(mpool1_1)
-        drop1_1 = Dropout(0.05)(conv3_1)
-        conv4_1 = ConvLSTM2D(
-            filters=8, kernel_size=(2, 2), strides=(2, 2), return_sequences=False
-        )(drop1_1)
-        # Backward
-        backward_frames = self.crop(1, mid_frame, -1)(zpad1)
-        conv2_2 = ConvLSTM2D(
-            filters=32,
-            kernel_size=(3, 3),
-            activation="relu",
-            return_sequences=True,
-            go_backwards=True,
-        )(backward_frames)
-        mpool1_2 = MaxPooling3D(pool_size=(1, 2, 2))(conv2_2)
-        conv3_2 = ConvLSTM2D(
-            filters=64,
-            kernel_size=(3, 3),
-            activation="tanh",
-            return_sequences=True,
-            go_backwards=True,
-        )(mpool1_2)
-        drop1_2 = Dropout(0.05)(conv3_2)
-        conv4_2 = ConvLSTM2D(
-            filters=8,
-            kernel_size=(2, 2),
-            strides=(2, 2),
-            return_sequences=False,
-            go_backwards=True,
-        )(drop1_2)
-
-        merge1 = concatenate([conv4_1, conv4_2], axis=3)
-
-        encode = Conv2D(filters=channels, kernel_size=(1, 1))(merge1)
-
-        up1 = UpSampling2D(size=(2, 2))(encode)
-        conv5 = Conv2DTranspose(
-            filters=8, kernel_size=2, strides=(2, 2), padding="valid"
-        )(up1)
 
         conv10 = Conv2D(
             filters=channels, kernel_size=2, strides=(2, 2), padding="valid"
-        )(up1)
+        )(conv1)
         # To get the output to agree with ndims
         decode = Reshape(target_shape=(1, height, width, channels))(conv10)
 
