@@ -44,7 +44,7 @@ class ModelClass:
     """
 
     def __init__(
-            self, dims: tuple, precision: str = "float32", c_space: str = "YUV", **kwargs
+        self, dims: tuple, precision: str = "float32", c_space: str = "YUV", **kwargs
     ):
         """
         Create base attributes for model instance
@@ -76,7 +76,7 @@ class ModelClass:
         K.set_floatx(precision)
 
     def train(
-            self, model, run_epochs: int = 1, batch_size: int = 2, util_class=None, **kwargs
+        self, model, run_epochs: int = 1, batch_size: int = 2, util_class=None, **kwargs
     ):
         """
         Function to set up and perform model training
@@ -1502,8 +1502,11 @@ class LSTMG(ModelClass):
         )(mpool1_2)
         drop1_2 = Dropout(0.05)(conv3_2)
 
+        conv10 = Conv2D(
+            filters=channels, kernel_size=2, strides=(2, 2), padding="valid"
+        )(drop1_2)
         # To get the output to agree with ndims
-        decode = Reshape(target_shape=(1, height, width, channels))(drop1_2)
+        decode = Reshape(target_shape=(1, height, width, channels))(conv10)
 
         model = Model(self.input, decode)
 
