@@ -1501,10 +1501,26 @@ class LSTMG(ModelClass):
             go_backwards=True,
         )(mpool1_2)
         drop1_2 = Dropout(0.05)(conv3_2)
+        conv4_2 = ConvLSTM2D(
+            filters=8,
+            kernel_size=(2, 2),
+            strides=(2, 2),
+            return_sequences=False,
+            go_backwards=True,
+        )(drop1_2)
+
+        merge1 = concatenate([conv4_1, conv4_2], axis=3)
+
+        encode = Conv2D(filters=channels, kernel_size=(1, 1))(merge1)
+
+        up1 = UpSampling2D(size=(2, 2))(encode)
+        conv5 = Conv2DTranspose(
+            filters=8, kernel_size=2, strides=(2, 2), padding="valid"
+        )(up1)
 
         conv10 = Conv2D(
             filters=channels, kernel_size=2, strides=(2, 2), padding="valid"
-        )(drop1_2)
+        )(up1)
         # To get the output to agree with ndims
         decode = Reshape(target_shape=(1, height, width, channels))(conv10)
 
