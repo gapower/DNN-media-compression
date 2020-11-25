@@ -44,7 +44,7 @@ class ModelClass:
     """
 
     def __init__(
-        self, dims: tuple, precision: str = "float32", c_space: str = "YUV", **kwargs
+            self, dims: tuple, precision: str = "float32", c_space: str = "YUV", **kwargs
     ):
         """
         Create base attributes for model instance
@@ -76,7 +76,7 @@ class ModelClass:
         K.set_floatx(precision)
 
     def train(
-        self, model, run_epochs: int = 1, batch_size: int = 2, util_class=None, **kwargs
+            self, model, run_epochs: int = 1, batch_size: int = 2, util_class=None, **kwargs
     ):
         """
         Function to set up and perform model training
@@ -1437,6 +1437,73 @@ class LSTM2(ModelClass):
         # decode = Conv3D(
         #     filters=3, kernel_size=(1, 2, 2), strides=(1, 2, 2), padding="valid"
         # )(conv9)
+
+        model = Model(self.input, decode)
+
+        model._name = self.name
+
+        model.c_space = self.c_space
+
+        return model
+
+
+class LSTMG(ModelClass):
+    """
+    Attempt1 (Attempt1_3D) architecture applied to LSTMs, using forward and backward prediction
+    """
+
+    def __init__(self, dims, precision="float32", **kwargs):
+        super().__init__(
+            dims, precision, **kwargs
+        )  # Is equivalent to super(Attempt1, self).__init__(dims)
+        self.name = "LSTMG"
+
+    def build(self):
+        frames = self.input.shape[1]
+        mid_frame = int(frames / 2)
+        width = self.input.shape[3]
+        height = self.input.shape[2]
+        channels = self.input.shape[4]
+
+        # Input layer
+        conv1 = ConvLSTM2D(
+            filters=64, kernel_size=(3, 3), activation="relu", return_sequences=True
+        )(self.input)
+        zpad1 = ZeroPadding3D(padding=(0, 2, 2))(conv1)
+        # Forward
+        forward_frames = self.crop(1, 0, mid_frame + 1)(zpad1)
+        conv2_1 = ConvLSTM2D(
+            filters=32, kernel_size=(3, 3), activation="relu", return_sequences=True
+        )(forward_frames)
+        mpool1_1 = MaxPooling3D(pool_size=(1, 2, 2))(conv2_1)
+        conv3_1 = ConvLSTM2D(
+            filters=64, kernel_size=(3, 3), activation="tanh", return_sequences=True
+        )(mpool1_1)
+        drop1_1 = Dropout(0.05)(conv3_1)
+        conv4_1 = ConvLSTM2D(
+            filters=8, kernel_size=(2, 2), strides=(2, 2), return_sequences=False
+        )(drop1_1)
+        # Backward
+        backward_frames = self.crop(1, mid_frame, -1)(zpad1)
+        conv2_2 = ConvLSTM2D(
+            filters=32,
+            kernel_size=(3, 3),
+            activation="relu",
+            return_sequences=True,
+            go_backwards=True,
+        )(backward_frames)
+        mpool1_2 = MaxPooling3D(pool_size=(1, 2, 2))(conv2_2)
+        conv3_2 = ConvLSTM2D(
+            filters=64,
+            kernel_size=(3, 3),
+            activation="tanh",
+            return_sequences=True,
+            go_backwards=True,
+        )(mpool1_2)
+        drop1_2 = Dropout(0.05)(conv3_2)
+
+        # To get the output to agree with ndims
+        decode = Reshape(target_shape=(1, height, width, channels))(drop1_2)
 
         model = Model(self.input, decode)
 
