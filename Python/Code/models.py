@@ -1467,14 +1467,12 @@ class LSTMG(ModelClass):
 
         # Input layer
         conv1 = ConvLSTM2D(
-            filters=64, kernel_size=(3, 3), activation="relu", return_sequences=True
+            filters=64, kernel_size=(5, 5), activation="relu", return_sequences=True
         )(self.input)
-        zpad1 = ZeroPadding3D(padding=(0, 2, 2))(conv1)
         # Forward
-        forward_frames = self.crop(1, 0, mid_frame + 1)(zpad1)
         conv2_1 = ConvLSTM2D(
-            filters=32, kernel_size=(3, 3), activation="relu", return_sequences=True
-        )(forward_frames)
+            filters=32, kernel_size=(5, 5), activation="relu", return_sequences=True
+        )(conv1)
 
         # To get the output to agree with ndims
         #decode = Reshape(target_shape=(1, height, width, channels))(conv10)
