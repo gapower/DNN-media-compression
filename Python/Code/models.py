@@ -126,8 +126,8 @@ class ModelClass:
             epoch_steps = (len(test_files) * util_class.frames * 30) // batch_size
             val_steps = (len(val_files) * util_class.frames * 30) // batch_size
         else:
-            epoch_steps = 144 // batch_size
-            #epoch_steps = 408 // batch_size
+            #epoch_steps = 144 // batch_size
+            epoch_steps = 408 // batch_size
             val_steps = epoch_steps // batch_size
         history = model.fit(
             gen_function(test_files, batch_size=batch_size, **kwargs),
@@ -165,7 +165,7 @@ class ModelClass:
         # Returns
             lr (float32): learning rate
         """
-        lr = 1e-3
+        lr = 1e-1
         if epoch > 180:
             lr *= 0.5e-3
         elif epoch > 160:
