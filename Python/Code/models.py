@@ -1467,11 +1467,11 @@ class LSTMG(ModelClass):
 
         # Input layer
         conv1 = ConvLSTM2D(
-            filters=64, kernel_size=(13, 13), activation="relu", return_sequences=True
+            filters=8, kernel_size=(3, 3), activation="relu", return_sequences=True
         )(self.input)
         # Forward
         conv2_1 = ConvLSTM2D(
-            filters=32, kernel_size=(13, 13), activation="relu", return_sequences=True
+            filters=4, kernel_size=(3, 3), activation="relu", return_sequences=True
         )(conv1)
 
         model = Model(self.input, conv2_1)
