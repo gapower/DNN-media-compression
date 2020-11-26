@@ -165,7 +165,7 @@ class ModelClass:
         # Returns
             lr (float32): learning rate
         """
-        lr = 1e-1
+        lr = 1e-3
         if epoch > 180:
             lr *= 0.5e-3
         elif epoch > 160:
@@ -1467,15 +1467,12 @@ class LSTMG(ModelClass):
 
         # Input layer
         conv1 = ConvLSTM2D(
-            filters=64, kernel_size=(5, 5), activation="relu", return_sequences=True
+            filters=3, kernel_size=(5, 5), activation="relu", return_sequences=True
         )(self.input)
         # Forward
         conv2_1 = ConvLSTM2D(
-            filters=32, kernel_size=(5, 5), activation="relu", return_sequences=True
+            filters=3, kernel_size=(5, 5), activation="relu", return_sequences=True
         )(conv1)
-
-        # To get the output to agree with ndims
-        #decode = Reshape(target_shape=(1, height, width, channels))(conv10)
 
         model = Model(self.input, conv2_1)
 
