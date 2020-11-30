@@ -301,7 +301,8 @@ class DataManagement:
         :param video_path: Path to video file
         :return: Video stream
         """
-        video = cv2.VideoCapture(video_path)
+        #video = cv2.VideoCapture(video_path)
+        video = cv2.VideoCapture("/content/drive/My Drive/Fifth Year/MAI/Databases/Video/Xiph/Colour/lowres/bqhighway_256p.mp4.y4m")
         print(video_path)
         if not video.isOpened():
             raise UserWarning(f"Cannot read video at {video_path}\nIs codec installed?")
