@@ -302,8 +302,10 @@ class DataManagement:
         :return: Video stream
         """
         video = cv2.VideoCapture(video_path)
+        print(video_path)
         if not video.isOpened():
             raise UserWarning(f"Cannot read video at {video_path}\nIs codec installed?")
+
 
         return video
 
