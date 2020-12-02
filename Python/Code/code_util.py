@@ -301,7 +301,6 @@ class DataManagement:
         :return: Video stream
         """
         video = cv2.VideoCapture(video_path)
-        print(video_path)
         if not video.isOpened():
             raise UserWarning(f"Cannot read video at {video_path}\nIs codec installed?")
 
@@ -448,7 +447,7 @@ class DataManagement:
             for f in os.listdir(self.compressed_data_path)
         ]
 
-        print("\n\nFiles in Generator Function: " + str(files) + "\n\n")
+        #print("\n\nFiles in Generator Function: " + str(files) + "\n\n")
 
         if validate:
             np.random.shuffle(files)
@@ -526,7 +525,6 @@ class DataManagement:
         self.set_input_dims(dims[1:])
         while True:
             # Select files for the batch
-            print("\n\nFiles: " + str(files) + "\n\n")
             batch_paths = np.random.choice(a=files, size=batch_size)
             batch_input = list()
             batch_output = list()
