@@ -646,9 +646,9 @@ class DataManagement:
             # Create plots to save training records
             fig_1 = plt.figure()
             print("MS-SSIM")
-            print(ms_ssim)
+            print(training_data.history["tf_ms_ssim_vid"])
             print("PSNR")
-            print(psnr)
+            print(training_data.history["tf_psnr_vid"])
             plt.plot(
                 np.asarray(training_data.history[f"{ms_ssim}"]) * -1.0,
                 label=f"MS-SSIM Training Loss",
