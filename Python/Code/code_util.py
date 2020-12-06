@@ -16,6 +16,7 @@ import cv2
 import re
 from timeit import default_timer as timer  # Measured in seconds
 from tqdm import tqdm
+import coremltools as ct
 
 
 class DataManagement:
@@ -1118,6 +1119,7 @@ class DataManagement:
         """
         self.out_path = os.sep.join(model_path.split(os.sep)[:-2])
         model = load_model(model_path, compile=False)
+        model = ct.convert(model)
         #model.load_weights(f"{model.name}_weights.h5")
         return model
 
@@ -1129,7 +1131,7 @@ class DataManagement:
         :return: True if model, else false
         """
         print(str(type(model)))
-        return type(model) == Model
+        return ((type(model) == Model) or (type(model) == Functional))
 
     def do_saving(self, model: models, history, model_path: str):
         """
