@@ -1126,6 +1126,7 @@ class DataManagement:
         :param model: Supposed instance of models class to check
         :return: True if model, else false
         """
+        model.load_weights(f"{model.name}_weights.h5")
         return type(model) == Model
 
     def do_saving(self, model: models, history, model_path: str):
