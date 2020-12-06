@@ -1117,7 +1117,7 @@ class DataManagement:
         :return: Instance of saved model
         """
         self.out_path = os.sep.join(model_path.split(os.sep)[:-2])
-        model = load_model(model_path, compile=False, custom_objects={"ModelClass": "LSTM2"})
+        model = load_model(model_path, compile=False)
         #model.load_weights(f"{model.name}_weights.h5")
         return model
 
