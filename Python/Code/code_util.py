@@ -1117,7 +1117,9 @@ class DataManagement:
         :return: Instance of saved model
         """
         self.out_path = os.sep.join(model_path.split(os.sep)[:-2])
-        return load_model(model_path, compile=False)
+        model = load_model(model_path, compile=False)
+        model.load_weights(f"{model.name}_weights.h5")
+        return model
 
     @staticmethod
     def loaded_model(model: models) -> bool:
@@ -1126,7 +1128,6 @@ class DataManagement:
         :param model: Supposed instance of models class to check
         :return: True if model, else false
         """
-        model.load_weights(f"{model.name}_weights.h5")
         return type(model) == Model
 
     def do_saving(self, model: models, history, model_path: str):
