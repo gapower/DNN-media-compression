@@ -1141,7 +1141,7 @@ class DataManagement:
 
         # Save the whole model
         #model.save(f"{model.name}.h5")  # For Keras (TF 1.0)
-        model.save(f"{model.name}.tf", save_format='tf')  # TF 2.0
+        model.save(f"{model.name}.tf")  # TF 2.0
 
         # Save weights only
         model.save_weights(f"{model.name}_weights.h5")
