@@ -1118,7 +1118,6 @@ class DataManagement:
         """
         self.out_path = os.sep.join(model_path.split(os.sep)[:-2])
         model = load_model(model_path, compile=False)
-        print("Model: " + str(model))
         #model.load_weights(f"{model.name}_weights.h5")
         return model
 
@@ -1129,6 +1128,7 @@ class DataManagement:
         :param model: Supposed instance of models class to check
         :return: True if model, else false
         """
+        print(str(type(model)))
         return type(model) == Model
 
     def do_saving(self, model: models, history, model_path: str):
