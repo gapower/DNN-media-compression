@@ -1140,7 +1140,7 @@ class DataManagement:
         os.chdir(model_path)
 
         # Save the whole model
-        model.save(f"{model.name}.h5")  # For Keras (TF 1.0)
+        #model.save(f"{model.name}.h5")  # For Keras (TF 1.0)
         model.save(f"{model.name}.tf", save_format='tf')  # TF 2.0
 
         # Save weights only
