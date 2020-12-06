@@ -1131,7 +1131,7 @@ class DataManagement:
         :return: True if model, else false
         """
         print(str(type(model)))
-        return ((type(model) == Model) or (type(model) == Functional))
+        return type(model) == Model
 
     def do_saving(self, model: models, history, model_path: str):
         """
