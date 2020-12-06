@@ -1117,7 +1117,8 @@ class DataManagement:
         :return: Instance of saved model
         """
         self.out_path = os.sep.join(model_path.split(os.sep)[:-2])
-        return load_model(model_path, compile=False)
+        return load_model(model_path)
+        #return load_model(model_path, compile=False)
 
     @staticmethod
     def loaded_model(model: models) -> bool:
