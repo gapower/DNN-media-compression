@@ -630,8 +630,8 @@ class DataManagement:
             # Create folder name based on params
             f_name += "optimiser={}_epochs={}_batch_size={}_lr={}".format(
                 training_data.model.optimizer.iterations.name.split("/")[0],
-                training_data.params["epochs"],
-                #len(training_data.epoch),
+                #training_data.params["epochs"],
+                len(training_data.epoch),
                 training_data.params["batch_size"],
                 training_data.params["lr"],
             )

@@ -20,6 +20,7 @@ def main(
 ):
     history = dict()
     params = dict()
+    print(str(model_class))
     loaded_model = data_class.loaded_model(model_class)
     if loaded_model:
         model = model_class
