@@ -54,7 +54,7 @@ def main(
                 input_dims, **kwargs
             )
             model = chosen_model.build()
-            model.load_weights("/content/drive/My Drive/Fifth Year/MAI/Databases/Out/LSTM2/420p/LowQual/256x256/optimiser=Adam_epochs=70_batch_size=2_lr=0.00025079/Model/LSTM2.h5")
+            model.load_weights("/content/drive/My Drive/Fifth Year/MAI/Databases/Out/LSTM2/420p/LowQual/256x256/optimiser=Adam_epochs=70_batch_size=2_lr=0.00025079/Model/LSTM2_weights.h5")
 
         kwargs.pop("c_space")
         # Setting learning rate from average of last model
