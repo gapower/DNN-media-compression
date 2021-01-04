@@ -422,7 +422,7 @@ class DataManagement:
         if self.sequences:
             # Add number of frames to resolution
             # d = self.input_dims.get("dims", (256, 256, 3))
-            d = self.input_dims.get("dims", (426, 240, 3))
+            d = self.input_dims.get("dims", (424, 240, 3))
             d = (self.frames,) + d  # Place frames first
         else:
             d = self.input_dims.get("dims", (512, 768, 3))
