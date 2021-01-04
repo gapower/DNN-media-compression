@@ -523,6 +523,7 @@ class DataManagement:
         :return: model inputs, labels
         """
         dims = self.get_input_dims()
+        # DOWNSIZING OCCURS HERE
         self.set_input_dims(dims[1:])
         while True:
             # Select files for the batch
@@ -721,6 +722,33 @@ class DataManagement:
             fig_3.savefig("MSE.png")
             fig_4.savefig("lr.png")
 
+            t_dir = os.path.join(out_path, "Training")
+            os.chdir(t_dir)
+            with open("loss.txt", "a") as out_file:
+                out_file.write(f"compressed_path: {self.compressed_data_path}\n")
+                out_file.write(f"out_path: {self.out_path}\n")
+                out_file.write(f"Loss: ")
+                out_file.write(str({training_data.history["loss"]}))
+
+            with open("mse.txt", "a") as out_file:
+                out_file.write(f"compressed_path: {self.compressed_data_path}\n")
+                out_file.write(f"out_path: {self.out_path}\n")
+                out_file.write(f"MSE: ")
+                out_file.write(str({training_data.history["mean_squared_error"]}))
+
+            with open("psnr.txt", "a") as out_file:
+                out_file.write(f"compressed_path: {self.compressed_data_path}\n")
+                out_file.write(f"out_path: {self.out_path}\n")
+                out_file.write(f"PSNR: ")
+                out_file.write(str({training_data.history["tf_psnr_vid"]}))
+
+            with open("msssim.txt", "a") as out_file:
+                out_file.write(f"compressed_path: {self.compressed_data_path}\n")
+                out_file.write(f"out_path: {self.out_path}\n")
+                out_file.write(f"MS-SSIM: ")
+                out_file.write(str({training_data.history["tf_ms_ssim_vid"]}))
+
+            os.chdir(p_dir)
             # Save model
             m_dir = os.path.join(out_path, "Model")
 
