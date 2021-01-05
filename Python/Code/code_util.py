@@ -722,11 +722,11 @@ class DataManagement:
             fig_3.savefig("MSE.png")
             fig_4.savefig("lr.png")
 
-            with open("loss.txt", "a") as out_file:
-                out_file.write(f"compressed_path: {self.compressed_data_path}\n")
-                out_file.write(f"out_path: {self.out_path}\n")
-                out_file.write(f"Loss: ")
-                out_file.write(str({training_data.history["loss"]}))
+            # with open("loss.txt", "a") as out_file:
+            #     out_file.write(f"compressed_path: {self.compressed_data_path}\n")
+            #     out_file.write(f"out_path: {self.out_path}\n")
+            #     out_file.write(f"Loss: ")
+            #     out_file.write(str({training_data.history["loss"]}))
 
             with open("mse.txt", "a") as out_file:
                 out_file.write(f"compressed_path: {self.compressed_data_path}\n")
