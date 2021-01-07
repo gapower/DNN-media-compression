@@ -728,6 +728,7 @@ class DataManagement:
                 out_file.write(f"Loss: ")
                 for i in training_data.history["loss"]:
                     out_file.write(str(i))
+                    out_file.write("\n")
 
             with open("mse.txt", "a") as out_file:
                 out_file.write(f"compressed_path: {self.compressed_data_path}\n")
@@ -735,6 +736,7 @@ class DataManagement:
                 out_file.write(f"MSE: ")
                 for i in training_data.history["mean_squared_error"]:
                     out_file.write(str(i))
+                    out_file.write("\n")
 
             with open("psnr.txt", "a") as out_file:
                 out_file.write(f"compressed_path: {self.compressed_data_path}\n")
@@ -742,6 +744,7 @@ class DataManagement:
                 out_file.write(f"PSNR: ")
                 for i in training_data.history["tf_psnr_vid"]:
                     out_file.write(str(i))
+                    out_file.write("\n")
 
             with open("msssim.txt", "a") as out_file:
                 out_file.write(f"compressed_path: {self.compressed_data_path}\n")
@@ -749,6 +752,7 @@ class DataManagement:
                 out_file.write(f"MS-SSIM: ")
                 for i in training_data.history["tf_ms_ssim_vid"]:
                     out_file.write(str(i))
+                    out_file.write("\n")
 
             # Save model
             m_dir = os.path.join(out_path, "Model")
