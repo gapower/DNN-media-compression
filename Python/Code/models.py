@@ -975,10 +975,16 @@ class Attempt1_3D(ModelClass):
 
     def build(self):
         frames = self.input.shape[1]
+        print("Frames: " + str(len(frames)))
         mid_frame = int(frames / 2)
+        print("Mid Frame: " + str(mid_frame))
         width = self.input.shape[3]
+        print("Width: " + str(len(width)))
         height = self.input.shape[2]
+        print("Height: " + str(len(height)))
         channels = self.input.shape[4]
+        print("Channels: " + str(len(channels)))
+
         conv1 = Conv3D(filters=64, kernel_size=(1, 3, 3), activation="relu")(self.input)
         zpad1 = ZeroPadding3D(padding=(0, 2, 2))(conv1)
         conv2 = Conv3D(filters=32, kernel_size=(1, 3, 3), activation="relu")(zpad1)
@@ -1327,10 +1333,15 @@ class LSTM2(ModelClass):
 
     def build(self):
         frames = self.input.shape[1]
+        print("Frames: " + str(len(frames)))
         mid_frame = int(frames / 2)
+        print("Mid Frame: " + str(mid_frame))
         width = self.input.shape[3]
+        print("Width: " + str(len(width)))
         height = self.input.shape[2]
+        print("Height: " + str(len(height)))
         channels = self.input.shape[4]
+        print("Channels: " + str(len(channels)))
 
         # Input layer
         conv1 = ConvLSTM2D(
