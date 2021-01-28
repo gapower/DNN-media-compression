@@ -1017,9 +1017,10 @@ class Attempt1_3D(ModelClass):
         conv8 = Conv3DTranspose(
             filters=8, kernel_size=(1, 5, 5), strides=(1, 1, 1), padding="same"
         )(conv7)
+        zpad3 = ZeroPadding3D(padding=(0, 2, 2))(conv7)
         conv9 = Conv3D(
             filters=3, kernel_size=(1, 2, 2), strides=(1, 2, 2), padding="valid"
-        )(conv8)
+        )(zpad3)
         decode = self.crop(1, mid_frame, mid_frame + 1)(conv9)
 
         model = Model(self.input, decode)
