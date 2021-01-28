@@ -55,7 +55,7 @@ class DataManagement:
         self.compressed_data_path = c_data
         self.original_data_path = o_data
         self.out_path = out_dir
-        self.frames = 3 if sequences else 1
+        self.frames = 2 if sequences else 1
         self.fps = None
         self.c_space = c_space.upper()
 
