@@ -975,15 +975,15 @@ class Attempt1_3D(ModelClass):
 
     def build(self):
         frames = self.input.shape[1]
-        print("Frames: " + str(len(frames)))
+        print("Frames: " + str(frames))
         mid_frame = int(frames / 2)
         print("Mid Frame: " + str(mid_frame))
         width = self.input.shape[3]
-        print("Width: " + str(len(width)))
+        print("Width: " + str(width))
         height = self.input.shape[2]
-        print("Height: " + str(len(height)))
+        print("Height: " + str(height))
         channels = self.input.shape[4]
-        print("Channels: " + str(len(channels)))
+        print("Channels: " + str(channels))
 
         conv1 = Conv3D(filters=64, kernel_size=(1, 3, 3), activation="relu")(self.input)
         zpad1 = ZeroPadding3D(padding=(0, 2, 2))(conv1)
