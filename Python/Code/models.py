@@ -965,6 +965,70 @@ class UNet(ModelClass):
 VIDEO MODELS
 """
 
+class GP_3D(ModelClass):
+    def __init__(self, dims, precision="float32", **kwargs):
+        super().__init__(
+            dims, precision, **kwargs
+        )  # Is equivalent to super(Attempt1, self).__init__(dims)
+        self.name = "GP_3D"
+
+    def build(self):
+        frames = self.input.shape[1]
+        print("Frames: " + str(frames))
+        mid_frame = int(frames / 2)
+        print("Mid Frame: " + str(mid_frame))
+        width = self.input.shape[3]
+        print("Width: " + str(width))
+        height = self.input.shape[2]
+        print("Height: " + str(height))
+        channels = self.input.shape[4]
+        print("Channels: " + str(channels))
+
+        conv1 = Conv3D(filters=64, kernel_size=(3, 3, 3), activation="relu")(self.input)
+        zpad1 = ZeroPadding3D(padding=(0, 2, 2))(conv1)
+        conv2 = Conv3D(filters=32, kernel_size=(1, 3, 3), activation="relu")(zpad1)
+        mpool1 = MaxPooling3D(pool_size=(1, 2, 2))(conv2)
+        conv3 = Conv3D(filters=64, kernel_size=(1, 3, 3), activation="tanh")(mpool1)
+        drop1 = Dropout(0.05)(conv3)
+        encode = Conv3D(filters=3, kernel_size=(1, 2, 2), strides=(1, 2, 2))(drop1)
+
+        # model.add(Flatten())
+        up1 = UpSampling3D(size=(1, 2, 2))(encode)
+        conv4 = Conv3DTranspose(
+            filters=8, kernel_size=(1, 2, 2), strides=(1, 2, 2), padding="valid"
+        )(up1)
+        conv5 = Conv3DTranspose(
+            filters=16,
+            kernel_size=(1, 3, 3),
+            strides=(1, 1, 1),
+            padding="valid",
+            kernel_regularizer=regularizers.l2(0.01),
+        )(conv4)
+        up2 = UpSampling3D(size=(1, 2, 2))(conv5)
+        conv6 = Conv3DTranspose(
+            filters=32, kernel_size=(1, 3, 3), strides=(1, 1, 1), padding="same"
+        )(up2)
+        zpad2 = ZeroPadding3D(padding=(0, 2, 2))(conv6)
+        drop2 = GaussianDropout(0.02)(zpad2)
+        conv7 = Conv3DTranspose(
+            filters=16, kernel_size=(1, 3, 3), activation="relu", padding="same"
+        )(drop2)
+        conv8 = Conv3DTranspose(
+            filters=8, kernel_size=(1, 5, 5), strides=(1, 1, 1), padding="same"
+        )(conv7)
+        zpad3 = ZeroPadding3D(padding=(0, 2, 0))(conv8)
+        conv9 = Conv3D(
+            filters=3, kernel_size=(1, 2, 2), strides=(1, 2, 2), padding="valid"
+        )(zpad3)
+        decode = self.crop(1, mid_frame, mid_frame + 1)(conv9)
+
+        model = Model(self.input, decode)
+
+        model._name = self.name
+
+        model.c_space = self.c_space
+
+        return model
 
 class Attempt1_3D(ModelClass):
     def __init__(self, dims, precision="float32", **kwargs):
