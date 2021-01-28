@@ -990,23 +990,23 @@ class GP_3D(ModelClass):
         mpool1 = MaxPooling3D(pool_size=(1, 2, 2))(conv2)
         conv3 = Conv3D(filters=64, kernel_size=(1, 3, 3), activation="tanh")(mpool1)
         drop1 = Dropout(0.05)(conv3)
-        encode = Conv3D(filters=3, kernel_size=(1, 2, 2), strides=(1, 2, 2))(drop1)
+        encode = Conv3D(filters=3, kernel_size=(1, 2, 2), strides=(0, 2, 2))(drop1)
 
         # model.add(Flatten())
         up1 = UpSampling3D(size=(1, 2, 2))(encode)
         conv4 = Conv3DTranspose(
-            filters=8, kernel_size=(1, 2, 2), strides=(1, 2, 2), padding="valid"
+            filters=8, kernel_size=(1, 2, 2), strides=(0, 2, 2), padding="valid"
         )(up1)
         conv5 = Conv3DTranspose(
             filters=16,
             kernel_size=(1, 3, 3),
-            strides=(1, 1, 1),
+            strides=(0, 1, 1),
             padding="valid",
             kernel_regularizer=regularizers.l2(0.01),
         )(conv4)
         up2 = UpSampling3D(size=(1, 2, 2))(conv5)
         conv6 = Conv3DTranspose(
-            filters=32, kernel_size=(1, 3, 3), strides=(1, 1, 1), padding="same"
+            filters=32, kernel_size=(1, 3, 3), strides=(0, 1, 1), padding="same"
         )(up2)
         zpad2 = ZeroPadding3D(padding=(0, 2, 2))(conv6)
         drop2 = GaussianDropout(0.02)(zpad2)
@@ -1014,11 +1014,11 @@ class GP_3D(ModelClass):
             filters=16, kernel_size=(1, 3, 3), activation="relu", padding="same"
         )(drop2)
         conv8 = Conv3DTranspose(
-            filters=8, kernel_size=(1, 5, 5), strides=(1, 1, 1), padding="same"
+            filters=8, kernel_size=(1, 5, 5), strides=(0, 1, 1), padding="same"
         )(conv7)
         zpad3 = ZeroPadding3D(padding=(0, 2, 0))(conv8)
         conv9 = Conv3D(
-            filters=3, kernel_size=(1, 2, 2), strides=(1, 2, 2), padding="valid"
+            filters=3, kernel_size=(1, 2, 2), strides=(0, 2, 2), padding="valid"
         )(zpad3)
         decode = self.crop(1, mid_frame, mid_frame + 1)(conv9)
 
