@@ -987,29 +987,29 @@ class GP_3D(ModelClass):
         zpad1 = ZeroPadding3D(padding=(0, 2, 1))(self.input)
         conv1 = Conv3D(filters=3, kernel_size=(3, 3, 3), activation="relu")(zpad1)
 
-        conv2 = Conv3D(filters=3, kernel_size=(2, 2, 2), stride=(2, 2, 2), activation="relu")(conv1)
+        conv2 = Conv3D(filters=3, kernel_size=(2, 2, 2), strides=(2, 2, 2), activation="relu")(conv1)
 
         zpad2 = ZeroPadding3D(padding=(0, 1, 1))(conv2)
         conv3 = Conv3D(filters=3, kernel_size=(3, 3, 3), activation="relu")(zpad2)
 
-        conv4 = Conv3D(filters=3, kernel_size=(2, 2, 2), stride=(2, 2, 2), activation="relu")(conv3)
+        conv4 = Conv3D(filters=3, kernel_size=(2, 2, 2), strides=(2, 2, 2), activation="relu")(conv3)
 
         up1 = UpSampling3D(size=(1, 2, 2))(conv4)
 
         merge1 = concatenate([up1, conv1], axis=0)
 
         zpad3 = ZeroPadding3D(padding=(0, 1, 1))(merge1)
-        conv5 = Conv3D(filters=1, kernel_size=(3, 3, 3), stride=(3, 1, 1), activation="relu")(zpad3)
+        conv5 = Conv3D(filters=1, kernel_size=(3, 3, 3), strides=(3, 1, 1), activation="relu")(zpad3)
 
         up2 = UpSampling3D(size=(1, 2, 2))(conv5)
 
         merge2 = concatenate([up2, conv2], axis=0)
 
         zpad4 = ZeroPadding3D(padding=(0, 0, 1))(merge2)
-        conv6 = Conv3D(filters=1, kernel_size=(3, 3, 3), stride=(3, 1, 1), activation="relu")(zpad4)
+        conv6 = Conv3D(filters=1, kernel_size=(3, 3, 3), strides=(3, 1, 1), activation="relu")(zpad4)
 
         zpad5 = ZeroPadding3D(padding=(0, 1, 1))(conv6)
-        conv6 = Conv3D(filters=1, kernel_size=(2, 3, 3), stride=(2, 1, 1), activation="relu")(zpad5)
+        conv6 = Conv3D(filters=1, kernel_size=(2, 3, 3), strides=(2, 1, 1), activation="relu")(zpad5)
 
 
         decode = self.crop(1, mid_frame, mid_frame + 1)(conv6)
