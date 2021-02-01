@@ -985,7 +985,7 @@ class GP_3D(ModelClass):
         print("Channels: " + str(channels))
 
         zpad1 = ZeroPadding3D(padding=(0, 2, 1))(self.input)
-        conv1 = Conv3D(filters=3, kernel_size=(3, 3, 3), activation="relu")(zpad1)
+        conv1 = Conv3D(filters=6, kernel_size=(1, 3, 3), activation="relu")(zpad1)
 
         conv2 = Conv3D(filters=3, kernel_size=(2, 2, 2), strides=(2, 2, 2), activation="relu")(conv1)
 
