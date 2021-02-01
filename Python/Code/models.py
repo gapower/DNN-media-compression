@@ -987,20 +987,20 @@ class GP_3D(ModelClass):
         zpad1 = ZeroPadding3D(padding=(0, 2, 1))(self.input)
         conv1_1 = Conv3D(filters=3, kernel_size=(2, 3, 3), activation="relu")(zpad1)
         conv1_2 = Conv3D(filters=3, kernel_size=(2, 3, 3), activation="relu")(zpad1)
-        merge1 = concatenate([conv1_1, conv1_2], axis=0)
+        merge1 = concatenate([conv1_1, conv1_2], axis=1)
 
         conv2_1 = Conv3D(filters=9, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge1)
         conv2_2 = Conv3D(filters=9, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge1)
-        merge2 = concatenate([conv2_1, conv2_2], axis=0)
+        merge2 = concatenate([conv2_1, conv2_2], axis=1)
 
         zpad2 = ZeroPadding3D(padding=(0, 1, 1))(merge2)
         conv3_1 = Conv3D(filters=27, kernel_size=(2, 3, 3), activation="relu")(zpad2)
         conv3_2 = Conv3D(filters=27, kernel_size=(2, 3, 3), activation="relu")(zpad2)
-        merge3 = concatenate([conv3_1, conv3_2], axis=0)
+        merge3 = concatenate([conv3_1, conv3_2], axis=1)
 
         conv4_1 = Conv3D(filters=81, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge3)
         conv4_2 = Conv3D(filters=81, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge3)
-        merge4 = concatenate([conv4_1, conv4_2], axis=0)
+        merge4 = concatenate([conv4_1, conv4_2], axis=1)
 
         up1 = UpSampling3D(size=(1, 2, 2))(merge4)
 
@@ -1016,12 +1016,12 @@ class GP_3D(ModelClass):
         zpad4 = ZeroPadding3D(padding=(0, 0, 1))(skip2)
         conv6_1 = Conv3D(filters=9, kernel_size=(2, 3, 3), activation="relu")(zpad4)
         conv6_2 = Conv3D(filters=9, kernel_size=(2, 3, 3), activation="relu")(zpad4)
-        merge4 = concatenate([conv6_1, conv6_2], axis=0)
+        merge4 = concatenate([conv6_1, conv6_2], axis=1)
 
         zpad5 = ZeroPadding3D(padding=(0, 1, 1))(merge4)
         conv7_1 = Conv3D(filters=1, kernel_size=(2, 3, 3), activation="relu")(zpad5)
         conv7_2 = Conv3D(filters=1, kernel_size=(2, 3, 3), activation="relu")(zpad5)
-        merge5 = concatenate([conv7_1, conv7_2], axis=0)
+        merge5 = concatenate([conv7_1, conv7_2], axis=1)
 
         decode = self.crop(1, mid_frame, mid_frame + 1)(merge5)
 
