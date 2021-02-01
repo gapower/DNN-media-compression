@@ -1021,8 +1021,8 @@ class GP_3D(ModelClass):
         merge6 = concatenate([conv6_1, conv6_2], axis=1)
 
         zpad5 = ZeroPadding3D(padding=(0, 1, 1))(merge6)
-        conv7_1 = Conv3D(filters=1, kernel_size=(2, 3, 3), activation="relu")(zpad5)
-        conv7_2 = Conv3D(filters=1, kernel_size=(2, 3, 3), activation="relu")(zpad5)
+        conv7_1 = Conv3D(filters=3, kernel_size=(2, 3, 3), activation="relu")(zpad5)
+        conv7_2 = Conv3D(filters=3, kernel_size=(2, 3, 3), activation="relu")(zpad5)
         merge7 = concatenate([conv7_1, conv7_2], axis=1)
 
         decode = self.crop(1, mid_frame, mid_frame + 1)(merge7)
