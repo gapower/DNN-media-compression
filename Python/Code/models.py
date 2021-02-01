@@ -1004,14 +1004,14 @@ class GP_3D(ModelClass):
 
         up1 = UpSampling3D(size=(1, 2, 2))(merge4)
 
-        skip1 = concatenate([up1, merge3], axis=3)
+        skip1 = concatenate([up1, merge3], axis=4)
 
         zpad3 = ZeroPadding3D(padding=(0, 1, 1))(skip1)
         conv5 = Conv3D(filters=27, kernel_size=(2, 3, 3), activation="relu")(zpad3)
 
         up2 = UpSampling3D(size=(1, 2, 2))(conv5)
 
-        skip2 = concatenate([up2, merge1], axis=0)
+        skip2 = concatenate([up2, merge1], axis=4)
 
         zpad4 = ZeroPadding3D(padding=(0, 0, 1))(skip2)
         conv6_1 = Conv3D(filters=9, kernel_size=(2, 3, 3), activation="relu")(zpad4)
