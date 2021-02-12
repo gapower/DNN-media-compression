@@ -1076,7 +1076,7 @@ class GP_3D_1(ModelClass):
 
         skip1 = concatenate([up1, merge3], axis=4)
 
-        zpad3 = ZeroPadding3D(padding=(0, 1, 1))(skip1)
+        zpad3 = ZeroPadding3D(padding=(0, 5, 5))(skip1)
         conv5_1 = Conv3D(filters=27, kernel_size=(2, 7, 7), activation="relu")(zpad3)
         conv5_2 = Conv3D(filters=27, kernel_size=(2, 7, 7), activation="relu")(zpad3)
         merge5 = concatenate([conv5_1, conv5_2], axis=1)
@@ -1085,7 +1085,7 @@ class GP_3D_1(ModelClass):
 
         skip2 = concatenate([up2, merge1], axis=4)
 
-        zpad4 = ZeroPadding3D(padding=(0, 0, 1))(skip2)
+        zpad4 = ZeroPadding3D(padding=(0, 6, 5))(skip2)
         conv6_1 = Conv3D(filters=9, kernel_size=(2, 7, 7), activation="relu")(zpad4)
         conv6_2 = Conv3D(filters=9, kernel_size=(2, 7, 7), activation="relu")(zpad4)
         merge6 = concatenate([conv6_1, conv6_2], axis=1)
