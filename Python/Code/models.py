@@ -1133,7 +1133,7 @@ class GP_3D_2(ModelClass):
         conv2_2 = Conv3D(filters=9, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge1)
         merge2 = concatenate([conv2_1, conv2_2], axis=1)
 
-        zpad2 = ZeroPadding3D(padding=(0, 1, 1))(merge2)
+        zpad2 = ZeroPadding3D(padding=(0, 0, 0))(merge2)
         conv3_1 = Conv3D(filters=27, kernel_size=(2, 5, 5), activation="relu")(zpad2)
         conv3_2 = Conv3D(filters=27, kernel_size=(2, 5, 5), activation="relu")(zpad2)
         merge3 = concatenate([conv3_1, conv3_2], axis=1)
