@@ -65,13 +65,16 @@ def tf_psnr_vid(y_true, y_pred, max_val=1.0):
         pred_frame = y_pred
     # [batch_size, frames, height, width, channels]
     # return tf_psnr(y_true, pred_frame, max_val=max_val)
-    return -10.0 * K.log(1.0/mse(y_true, pred_frame)) / K.log(10.0)
+    p = -10.0 * K.log(1.0/mse(y_true, pred_frame)) / K.log(10.0)
+    print("PSNR: " + str(p))
+    return p
 
 
 def mse(y_true, y_pred):
 
-    #return K.mean(K.square(y_pred - y_true))
-    return 0.1
+    mean_sq_er = K.mean(K.square(y_pred - y_true))
+    print("MSE: " + str(mean_sq_er))
+    return print
 
 
 def mse_vid(y_true, y_pred):
