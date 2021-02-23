@@ -9,6 +9,7 @@ import os
 import tempfile
 from keras_preprocessing.image import array_to_img
 import shutil
+import math
 
 dummy_loss_var = K.variable(0.0)
 
@@ -81,7 +82,7 @@ def tf_psnr_vid_1(y_true, y_pred, max_val=1.0):
     else:
         pred_frame = y_pred
     # [batch_size, frames, height, width, channels]
-    return -10.0 * np.log10(1/losses.mse(y_true, pred_frame))
+    return -10.0 * math.log10(1/losses.mse(y_true, pred_frame))
 
 
 def tf_ssim(y_true, y_pred, max_val=1.0):
