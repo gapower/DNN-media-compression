@@ -697,7 +697,7 @@ class DataManagement:
 
             fig_3 = plt.figure()
             plt.plot(
-                np.asarray(training_data.history["mse"]),
+                np.asarray(training_data.history["mse_vid"]),
                 label="MSE Training Loss",
                 color="blue",
             )
@@ -746,7 +746,7 @@ class DataManagement:
                 out_file.write(f"compressed_path: {self.compressed_data_path}\n")
                 out_file.write(f"out_path: {self.out_path}\n")
                 out_file.write(f"MSE: ")
-                for i in training_data.history["mse"]:
+                for i in training_data.history["mse_vid"]:
                     out_file.write(str(i))
                     out_file.write("\n")
 
