@@ -67,9 +67,21 @@ def tf_psnr_vid(y_true, y_pred, max_val=1.0):
     # return tf_psnr(y_true, pred_frame, max_val=max_val)
     return -10.0 * K.log(1.0/mse(y_true, pred_frame)) / K.log(10.0)
 
+
 def mse(y_true, y_pred):
 
     return K.mean(K.square(y_pred - y_true))
+
+
+def mse_vid(y_true, y_pred):
+    if len(y_pred.shape) > 4:
+        frames = y_pred.shape[1] if y_pred.shape[1] else 1
+        mid_frame = int(frames / 2)
+        pred_frame = y_pred[:, mid_frame, ...]
+    else:
+        pred_frame = y_pred
+    return mse(y_true, pred_frame)
+
 
 def tf_ssim(y_true, y_pred, max_val=1.0):
     """
