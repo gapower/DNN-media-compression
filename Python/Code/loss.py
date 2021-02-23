@@ -74,7 +74,7 @@ def mse(y_true, y_pred):
 
     mean_sq_er = K.mean(K.square(y_pred - y_true))
     print("MSE: " + str(mean_sq_er))
-    return print
+    return mean_sq_er
 
 
 def mse_vid(y_true, y_pred):
