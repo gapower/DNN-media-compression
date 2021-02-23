@@ -702,7 +702,7 @@ class DataManagement:
                 color="blue",
             )
             plt.plot(
-                np.asarray(training_data.history["val_mse"]),
+                np.asarray(training_data.history["val_mse_vid"]),
                 label="MSE Validation Loss",
                 color="orange",
             )
