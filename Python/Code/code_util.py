@@ -304,7 +304,7 @@ class DataManagement:
         if not video.isOpened():
             raise UserWarning(f"Cannot read video at {video_path}\nIs codec installed?")
 
-
+        print("Video: " + str(video_path))
         return video
 
     def video_metadata(self, video: cv2.VideoCapture) -> dict:
@@ -322,6 +322,11 @@ class DataManagement:
         metadata.update({"frames": num_frames})
         fps = (num_frames / msec_dur) * 1000
         metadata.update({"fps": fps})
+
+        print("Video duration: " + str(msec_dur))
+        print("Video Frames: " + str(num_frames))
+        print("Video FPS: " + str(fps))
+
         if not self.fps:
             self.fps = fps
         return metadata
@@ -534,6 +539,9 @@ class DataManagement:
 
             # Read in each input, perform pre-processing and get labels (original images)
             for input_video in batch_paths:
+
+                print("Video: " + str(input_video))
+
                 augment = self.get_augemntations()
                 # Load video
                 cap = self.load_video(input_video)
@@ -541,6 +549,9 @@ class DataManagement:
                 metadata = self.video_metadata(cap)
                 # TODO - Handle blank before / after frames
                 start_frame = np.random.choice(a=metadata.get("frames") - self.frames)
+
+                print("Start frame:" + str(start_frame))
+
                 frames = np.arange(start_frame, start_frame + self.frames)
                 input = self.preprocess_video(
                     cap, get_frames=frames, mode=augment, **self.input_dims

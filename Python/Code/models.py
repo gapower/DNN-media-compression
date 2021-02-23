@@ -1110,7 +1110,7 @@ class GP_3D_2(ModelClass):
         super().__init__(
             dims, precision, **kwargs
         )  # Is equivalent to super(Attempt1, self).__init__(dims)
-        self.name = "GP_3D_1"
+        self.name = "GP_3D_2"
 
     def build(self):
         frames = self.input.shape[1]
