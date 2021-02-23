@@ -697,12 +697,12 @@ class DataManagement:
 
             fig_3 = plt.figure()
             plt.plot(
-                np.asarray(training_data.history["mean_squared_error"]),
+                np.asarray(training_data.history["mse"]),
                 label="MSE Training Loss",
                 color="blue",
             )
             plt.plot(
-                np.asarray(training_data.history["val_mean_squared_error"]),
+                np.asarray(training_data.history["val_mse"]),
                 label="MSE Validation Loss",
                 color="orange",
             )
@@ -746,7 +746,7 @@ class DataManagement:
                 out_file.write(f"compressed_path: {self.compressed_data_path}\n")
                 out_file.write(f"out_path: {self.out_path}\n")
                 out_file.write(f"MSE: ")
-                for i in training_data.history["mean_squared_error"]:
+                for i in training_data.history["mse"]:
                     out_file.write(str(i))
                     out_file.write("\n")
 
