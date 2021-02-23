@@ -81,7 +81,7 @@ def main(
                 model.compile(
                     optimizer=adam,
                     loss=keras.losses.mse,
-                    metrics=[keras.losses.mse, loss.tf_psnr_vid_1, loss.tf_ms_ssim_vid],
+                    metrics=[keras.losses.mse, loss.tf_psnr_vid, loss.tf_ms_ssim_vid],
                 )
         else:
             model.compile(
