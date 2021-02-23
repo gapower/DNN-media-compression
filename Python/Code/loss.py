@@ -70,8 +70,7 @@ def tf_psnr_vid(y_true, y_pred, max_val=1.0):
 
 def mse(y_true, y_pred):
 
-    return K.mean(K.square(y_pred - y_true))
-    #return 0.1
+    return 0.1
 
 
 def mse_vid(y_true, y_pred):
