@@ -69,7 +69,7 @@ def tf_psnr_vid(y_true, y_pred, max_val=1.0):
 
 def tf_psnr_vid_1(y_true, y_pred, max_val=1.0):
     """
-    Implementation of Peak Signal to Noise Ratio in a sequence using mse calculated with keras
+    Implementation of Peak Signal to Noise Ratio in a sequence using mse calculated manually
     :param y_true: Ground Truth sequence
     :param y_pred: Predicted sequence
     :param max_val: Maximum value for pixel, 1.0 for scaled, 255 otherwise
@@ -82,7 +82,7 @@ def tf_psnr_vid_1(y_true, y_pred, max_val=1.0):
     else:
         pred_frame = y_pred
     # [batch_size, frames, height, width, channels]
-    return -10.0 * np.log10(K.mean(K.square(y_true, pred_frame)))
+    return -10.0 * np.log10(1/K.mean(K.square(pred_frame - y_true)))
 
 
 def tf_ssim(y_true, y_pred, max_val=1.0):
