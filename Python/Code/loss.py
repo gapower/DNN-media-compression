@@ -2,6 +2,7 @@
 File containing custom loss functions
 """
 from keras import backend as K
+from keras import losses
 import tensorflow as tf
 import numpy as np
 import os
@@ -80,7 +81,7 @@ def tf_psnr_vid_1(y_true, y_pred, max_val=1.0):
     else:
         pred_frame = y_pred
     # [batch_size, frames, height, width, channels]
-    return -10.0 * np.log10(np.mean(np.square(pred_frame - y_true)))
+    return -10.0 * np.log10(losses.mse(pred_frame - y_true))
 
 
 def tf_ssim(y_true, y_pred, max_val=1.0):
