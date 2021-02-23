@@ -75,13 +75,13 @@ def main(
                 model.compile(
                     optimizer=adam,
                     loss=loss.tf_ms_ssim_vid,
-                    metrics=[loss.tf_ms_ssim_vid, keras.losses.mse, loss.tf_psnr_vid],
+                    metrics=[loss.tf_ms_ssim_vid, loss.mse, loss.tf_psnr_vid],
                 )
             else:
                 model.compile(
                     optimizer=adam,
-                    loss=keras.losses.mse,
-                    metrics=[keras.losses.mse, loss.tf_psnr_vid, loss.tf_ms_ssim_vid],
+                    loss=loss.mse,
+                    metrics=[loss.mse, loss.tf_psnr_vid, loss.tf_ms_ssim_vid],
                 )
         else:
             model.compile(
