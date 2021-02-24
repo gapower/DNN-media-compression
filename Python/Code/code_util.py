@@ -740,7 +740,7 @@ class DataManagement:
                 out_file.write(f"compressed_path: {self.compressed_data_path}\n")
                 out_file.write(f"out_path: {self.out_path}\n")
                 out_file.write(f"Loss: ")
-                for i in training_data.history["loss"]:
+                for i in training_data.history["val_loss"]:
                     out_file.write(str(i))
                     out_file.write("\n")
 
@@ -748,7 +748,7 @@ class DataManagement:
                 out_file.write(f"compressed_path: {self.compressed_data_path}\n")
                 out_file.write(f"out_path: {self.out_path}\n")
                 out_file.write(f"MSE: ")
-                for i in training_data.history["mse_vid"]:
+                for i in training_data.history["val_mse_vid"]:
                     out_file.write(str(i))
                     out_file.write("\n")
 
@@ -756,7 +756,7 @@ class DataManagement:
                 out_file.write(f"compressed_path: {self.compressed_data_path}\n")
                 out_file.write(f"out_path: {self.out_path}\n")
                 out_file.write(f"PSNR: ")
-                for i in training_data.history["tf_psnr_vid"]:
+                for i in training_data.history["val_tf_psnr_vid"]:
                     out_file.write(str(i))
                     out_file.write("\n")
 
@@ -764,7 +764,7 @@ class DataManagement:
                 out_file.write(f"compressed_path: {self.compressed_data_path}\n")
                 out_file.write(f"out_path: {self.out_path}\n")
                 out_file.write(f"MS-SSIM: ")
-                for i in training_data.history["tf_ms_ssim_vid"]:
+                for i in training_data.history["val_tf_ms_ssim_vid"]:
                     out_file.write(str(i))
                     out_file.write("\n")
 
