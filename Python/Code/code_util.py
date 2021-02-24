@@ -540,7 +540,7 @@ class DataManagement:
             # Read in each input, perform pre-processing and get labels (original images)
             for input_video in batch_paths:
 
-                print("Video: " + str(input_video))
+               # print("Video: " + str(input_video))
 
                 augment = self.get_augemntations()
                 # Load video
@@ -550,7 +550,7 @@ class DataManagement:
                 # TODO - Handle blank before / after frames
                 start_frame = np.random.choice(a=metadata.get("frames") - self.frames)
 
-                print("Start frame:" + str(start_frame))
+               # print("Start frame:" + str(start_frame))
 
                 frames = np.arange(start_frame, start_frame + self.frames)
                 input = self.preprocess_video(
