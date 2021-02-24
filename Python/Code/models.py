@@ -89,7 +89,7 @@ class ModelClass:
         """
         verbosity = 1
         max_time_seconds = int(60 * 60 * 10)
-        monitor_metric = "val_mean_squared_error"
+        monitor_metric = "val_mse"
         cb = list()
         cb_patience = min(int(run_epochs * 0.15), 20)
         cb.append(
