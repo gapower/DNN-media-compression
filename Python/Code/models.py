@@ -88,7 +88,7 @@ class ModelClass:
         :return: History of trained model
         """
         verbosity = 1
-        max_time_seconds = int(60 * 60 * 16.5)
+        max_time_seconds = int(60 * 60 * 10)
         monitor_metric = "val_mean_squared_error"
         cb = list()
         cb_patience = min(int(run_epochs * 0.15), 20)
