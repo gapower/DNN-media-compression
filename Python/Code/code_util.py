@@ -304,7 +304,7 @@ class DataManagement:
         if not video.isOpened():
             raise UserWarning(f"Cannot read video at {video_path}\nIs codec installed?")
 
-        print("Video: " + str(video_path))
+       # print("Video: " + str(video_path))
         return video
 
     def video_metadata(self, video: cv2.VideoCapture) -> dict:
@@ -323,9 +323,9 @@ class DataManagement:
         fps = (num_frames / msec_dur) * 1000
         metadata.update({"fps": fps})
 
-        print("Video duration: " + str(msec_dur))
-        print("Video Frames: " + str(num_frames))
-        print("Video FPS: " + str(fps))
+       # print("Video duration: " + str(msec_dur))
+       # print("Video Frames: " + str(num_frames))
+       # print("Video FPS: " + str(fps))
 
         if not self.fps:
             self.fps = fps
@@ -661,10 +661,10 @@ class DataManagement:
 
             # Create plots to save training records
             fig_1 = plt.figure()
-            print("MS-SSIM")
-            print(training_data.history["tf_ms_ssim_vid"])
-            print("PSNR")
-            print(training_data.history["tf_psnr_vid"])
+           # print("MS-SSIM")
+           # print(training_data.history["tf_ms_ssim_vid"])
+           # print("PSNR")
+           # print(training_data.history["tf_psnr_vid"])
             plt.plot(
                 np.asarray(training_data.history[f"{ms_ssim}"]) * -1.0,
                 label=f"MS-SSIM Training Loss",
