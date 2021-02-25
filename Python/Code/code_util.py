@@ -968,13 +968,13 @@ class DataManagement:
             self.out_path = os.path.join(self.out_path, self.unique_file(dir_name))
             os.chdir(return_dir)
         else:
-            training_dims = f"{model.input_shape[3]}x{model.input_shape[2]}"
+            #training_dims = f"{model.input_shape[3]}x{model.input_shape[2]}"
             self.out_path = os.path.join(self.out_path, model.name, encoder)
             if low_qual:
                 self.out_path = os.path.join(self.out_path, low_qual)
-            if no_deblock:
-                self.out_path = os.path.join(self.out_path, no_deblock)
-            self.out_path = os.path.join(self.out_path, training_dims)
+            #if no_deblock:
+             #   self.out_path = os.path.join(self.out_path, no_deblock)
+            #self.out_path = os.path.join(self.out_path, training_dims)
 
         t_dir = self.output_helper(model, training_data)
 
