@@ -88,16 +88,8 @@ class ModelClass:
         :return: History of trained model
         """
         verbosity = 1
-<<<<<<< HEAD
-<<<<<<< HEAD
-        max_time_seconds = int(60 * 60 * 10)
-        monitor_metric = "val_mse_vid"
-=======
-=======
->>>>>>> parent of 63ae6a0 (Updated max train time)
         max_time_seconds = int(60 * 60 * 16.5)
         monitor_metric = "val_mean_squared_error"
->>>>>>> parent of 63ae6a0 (Updated max train time)
         cb = list()
         cb_patience = min(int(run_epochs * 0.15), 20)
         cb.append(
