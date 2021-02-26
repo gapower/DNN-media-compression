@@ -959,7 +959,7 @@ class DataManagement:
             if continue_training:
                 dir_name = f"trained_model_{encoder}"
             else:
-                dir_name = f"loaded_model_{encoder}"OSError: [Errno 36] File name too long
+                dir_name = f"loaded_model_{encoder}"
             if low_qual:
                 dir_name += f"_{low_qual}"
             if no_deblock:
