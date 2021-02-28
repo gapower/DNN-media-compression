@@ -52,7 +52,7 @@ def main(
             model = chosen_model.build()
             chosen_model = data_class.get_model_from_string("LSTM2")(input_dims, **kwargs)
             #model = chosen_model.build()
-            model.load_weights("/content/drive/My Drive/Fifth Year/MAI/Databases/Out/GP_3D_2/sub_640p/LowQual/optimiser=Adam_epochs=22_batch_size=1_lr=0.0005/Model/GP_3D_2_weights.h5")
+            model.load_weights("/content/drive/My Drive/Fifth Year/MAI/Databases/Out/GP_3D_2/sub_640p/LowQual/optimiser=Adam_epochs=23_batch_size=1_lr=0.0005/Model/GP_3D_2_weights.h5")
 
         kwargs.pop("c_space")
         # Setting learning rate from average of last model
