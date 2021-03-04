@@ -1124,7 +1124,7 @@ class GP_3D_2(ModelClass):
         channels = self.input.shape[4]
         print("Channels: " + str(channels))
 
-        zpad1 = ZeroPadding3D(padding=(0, 1, 2))(self.input)
+        zpad1 = ZeroPadding3D(padding=(0, 1, 2), input_shape = (frames, width, height, 1))(self.input)
         conv1_1 = Conv3D(filters=3, kernel_size=(2, 5, 5), activation="relu")(zpad1)
         conv1_2 = Conv3D(filters=3, kernel_size=(2, 5, 5), activation="relu")(zpad1)
         merge1 = concatenate([conv1_1, conv1_2], axis=1)
