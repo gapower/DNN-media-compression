@@ -428,10 +428,10 @@ class DataManagement:
             # Add number of frames to resolution
             # d = self.input_dims.get("dims", (256, 256, 3))
             # d = self.input_dims.get("dims", (352, 288, 3))
-            d = self.input_dims.get("dims", (426, 240, 1))
+            d = self.input_dims.get("dims", (426, 240, 3))
             d = (self.frames,) + d  # Place frames first
         else:
-            d = self.input_dims.get("dims", (512, 768, 1))
+            d = self.input_dims.get("dims", (512, 768, 3))
         return d
 
     def set_input_dims(self, input_dims: tuple):
