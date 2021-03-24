@@ -153,6 +153,8 @@ class DataManagement:
         curr,
         prev
     ):
+
+        type(curr)
         curr_g = cv2.cvtColor(cv2.UMat(curr), cv2.COLOR_BGR2GRAY)
         prev_g = cv2.cvtColor(cv2.UMat(prev), cv2.COLOR_BGR2GRAY)
 
