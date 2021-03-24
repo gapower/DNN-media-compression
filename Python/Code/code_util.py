@@ -120,7 +120,7 @@ class DataManagement:
 
         if len(frames) == 2:
             print(type(frames[0]))
-            frames[0] = self.motion_compensation(frames[0], frames[1])
+            frames[0] = self.motion_compensation(np.array(frames[0]), np.array(frames[1]))
 
         for i in frames:
             cap.set(1, i)
@@ -154,6 +154,7 @@ class DataManagement:
         curr,
         prev
     ):
+
         curr_g = cv2.cvtColor(np.float32(curr), cv2.COLOR_YUV2GRAY_YUY2)
         prev_g = cv2.cvtColor(np.float32(prev), cv2.COLOR_YUV2GRAY_YUY2)
 
