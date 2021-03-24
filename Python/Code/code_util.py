@@ -119,8 +119,7 @@ class DataManagement:
         frames = get_frames if get_frames is not None else range(int(self.frames))
 
         if len(frames) == 2:
-            print(frames.shape)
-            frames[0] = self.motion_compensation(np.array(frames[0]).astype(np.float32), np.array(frames[1]).astype(np.float32))
+            frames[0] = self.motion_compensation(np.array(frames[0].astype(np.float32)), np.array(frames[1].astype(np.float32)))
 
         for i in frames:
             cap.set(1, i)
@@ -154,6 +153,7 @@ class DataManagement:
         curr,
         prev
     ):
+        print(curr.shape)
 
         curr_g = cv2.cvtColor(curr, cv2.COLOR_RGB2GRAY)
         prev_g = cv2.cvtColor(prev, cv2.COLOR_RGB2GRAY)
