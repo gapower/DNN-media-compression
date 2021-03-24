@@ -125,7 +125,7 @@ class DataManagement:
             ret_cr, frame_cr = cap.read()
             print(type(frame_pr))
             print(frame_pr.shape)
-            frames[0] = self.motion_compensation(frame_pr, frame_cr)
+            comp_frame = self.motion_compensation(frame_pr, frame_cr)
 
         for i in frames:
             cap.set(1, i)
