@@ -129,27 +129,27 @@ class DataManagement:
                 ret_cr, frame_cr = cap.read()
                 frame = self.motion_compensation(frame_pr, frame_cr)
 
-                if not ret:
-                    if get_frames is not None:
-                        frame = np.copy(vid[-1])
-                        frame.fill(0)
-                    else:
-                        break
-                if i < 0:
+            if not ret:
+                if get_frames is not None:
+                    frame = np.copy(vid[-1])
                     frame.fill(0)
-                frame = frame.astype(self.precision, copy=False)
-                frame = self.check_dims(frame, dims.get("dims", frame.shape))
-                frame = self.do_augmentation(
-                    mode, frame, do_conversion=do_conversion, frame=True
-                )
-                if plot:
-                    plt.figure()
-                    plt.imshow(frame.astype(float))
-                    # Choice of colourspace may affect how output is represented, matplotlib assumes RGB
-                    # OpenCV defaults to BGR
-                    plt.show()
-                vid.append(frame)
-            cap.release()
+                else:
+                    break
+            if i < 0:
+                frame.fill(0)
+            frame = frame.astype(self.precision, copy=False)
+            frame = self.check_dims(frame, dims.get("dims", frame.shape))
+            frame = self.do_augmentation(
+                mode, frame, do_conversion=do_conversion, frame=True
+            )
+            if plot:
+                plt.figure()
+                plt.imshow(frame.astype(float))
+                # Choice of colourspace may affect how output is represented, matplotlib assumes RGB
+                # OpenCV defaults to BGR
+                plt.show()
+            vid.append(frame)
+        cap.release()
 
         return vid
 
@@ -158,8 +158,6 @@ class DataManagement:
         curr,
         prev
     ):
-        print(curr.shape)
-
         curr_g = cv2.cvtColor(curr, cv2.COLOR_RGB2GRAY)
         prev_g = cv2.cvtColor(prev, cv2.COLOR_RGB2GRAY)
 
