@@ -129,6 +129,9 @@ class DataManagement:
                 ret_cr, frame_cr = cap.read()
                 frame = self.motion_compensation(frame_pr, frame_cr)
 
+            print(type(frame))
+            print(len(frame))
+
             if not ret:
                 if get_frames is not None:
                     frame = np.copy(vid[-1])
