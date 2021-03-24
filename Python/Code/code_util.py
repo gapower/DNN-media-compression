@@ -153,8 +153,8 @@ class DataManagement:
         curr,
         prev
     ):
-        curr_g = cv2.cvtColor(curr, cv2.COLOR_BGR2GRAY)
-        prev_g = cv2.cvtColor(prev, cv2.COLOR_BGR2GRAY)
+        curr_g = cv2.cvtColor(np.float32(curr), cv2.COLOR_BGR2GRAY)
+        prev_g = cv2.cvtColor(np.float32(prev), cv2.COLOR_BGR2GRAY)
 
         flow = cv2.calcOpticalFlowFarneback(prev_g, curr_g, None, 0.5, 3, 15, 3, 5, 1.2, 0)
 
