@@ -119,7 +119,7 @@ class DataManagement:
         frames = get_frames if get_frames is not None else range(int(self.frames))
 
         if len(frames) == 2:
-            type(frames[0])
+            print(type(frames[0]))
             frames[0] = self.motion_compensation(frames[0], frames[1])
 
         for i in frames:
