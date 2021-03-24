@@ -119,8 +119,13 @@ class DataManagement:
         frames = get_frames if get_frames is not None else range(int(self.frames))
 
         if len(frames) == 2:
-            print(frames)
-            frames[0] = self.motion_compensation(np.array(frames[0].astype(np.float32)), np.array(frames[1].astype(np.float32)))
+            cap.set(1, 0)
+            ret_pr, frame_pr = cap.read()
+            cap.set(1, 1)
+            ret_cr, frame_cr = cap.read()
+            print(type(frame_pr))
+            print(frame_pr.shape)
+            frames[0] = self.motion_compensation(frame_pr, frame_cr)
 
         for i in frames:
             cap.set(1, i)
