@@ -118,39 +118,38 @@ class DataManagement:
         vid = list()
         frames = get_frames if get_frames is not None else range(int(self.frames))
 
-        if len(frames) == 2:
-            cap.set(1, 0)
-            ret_pr, frame_pr = cap.read()
-            cap.set(1, 1)
-            ret_cr, frame_cr = cap.read()
-            print(type(frame_pr))
-            print(frame_pr.shape)
-            comp_frame = self.motion_compensation(frame_pr, frame_cr)
-
         for i in frames:
-            cap.set(1, i)
-            ret, frame = cap.read()
-            if not ret:
-                if get_frames is not None:
-                    frame = np.copy(vid[-1])
+            if i == 0:
+                cap.set(1, i)
+                ret, frame = cap.read()
+            else:
+                cap.set(1, i)
+                ret, frame_pr = cap.read()
+                cap.set(1, i - 1)
+                ret_cr, frame_cr = cap.read()
+                frame = self.motion_compensation(frame_pr, frame_cr)
+
+                if not ret:
+                    if get_frames is not None:
+                        frame = np.copy(vid[-1])
+                        frame.fill(0)
+                    else:
+                        break
+                if i < 0:
                     frame.fill(0)
-                else:
-                    break
-            if i < 0:
-                frame.fill(0)
-            frame = frame.astype(self.precision, copy=False)
-            frame = self.check_dims(frame, dims.get("dims", frame.shape))
-            frame = self.do_augmentation(
-                mode, frame, do_conversion=do_conversion, frame=True
-            )
-            if plot:
-                plt.figure()
-                plt.imshow(frame.astype(float))
-                # Choice of colourspace may affect how output is represented, matplotlib assumes RGB
-                # OpenCV defaults to BGR
-                plt.show()
-            vid.append(frame)
-        cap.release()
+                frame = frame.astype(self.precision, copy=False)
+                frame = self.check_dims(frame, dims.get("dims", frame.shape))
+                frame = self.do_augmentation(
+                    mode, frame, do_conversion=do_conversion, frame=True
+                )
+                if plot:
+                    plt.figure()
+                    plt.imshow(frame.astype(float))
+                    # Choice of colourspace may affect how output is represented, matplotlib assumes RGB
+                    # OpenCV defaults to BGR
+                    plt.show()
+                vid.append(frame)
+            cap.release()
 
         return vid
 
