@@ -119,18 +119,15 @@ class DataManagement:
         frames = get_frames if get_frames is not None else range(int(self.frames))
 
         for i in frames:
-            # if i == 0:
-            cap.set(1, i)
-            ret, frame = cap.read()
-            # else:
-            #     cap.set(1, i)
-            #     ret, frame_pr = cap.read()
-            #     cap.set(1, i - 1)
-            #     ret_cr, frame_cr = cap.read()
-            #     frame = self.motion_compensation(frame_pr, frame_cr)
-
-            print(type(frame))
-            print(frame.shape)
+            if i == 0:
+                cap.set(1, i)
+                ret, frame = cap.read()
+            else:
+                cap.set(1, i)
+                ret, frame_pr = cap.read()
+                cap.set(1, i - 1)
+                ret_cr, frame_cr = cap.read()
+                frame = self.motion_compensation(frame_pr, frame_cr)
 
             if not ret:
                 if get_frames is not None:
