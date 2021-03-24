@@ -117,6 +117,10 @@ class DataManagement:
 
         vid = list()
         frames = get_frames if get_frames is not None else range(int(self.frames))
+
+        if len(frames) == 2:
+            frames[0] = self.motion_compensation(frames[0], frames[1])
+
         for i in frames:
             cap.set(1, i)
             ret, frame = cap.read()
@@ -143,6 +147,33 @@ class DataManagement:
         cap.release()
 
         return vid
+
+    def motion_compensation(
+        self,
+        curr,
+        prev
+    ):
+        curr_g = cv2.cvtColor(curr, cv2.COLOR_BGR2GRAY)
+        prev_g = cv2.cvtColor(prev, cv2.COLOR_BGR2GRAY)
+
+        flow = cv2.calcOpticalFlowFarneback(prev_g, curr_g, None, 0.5, 3, 15, 3, 5, 1.2, 0)
+
+        mc_frame = curr
+        for c in range(3):
+            for y in range(len(curr[0])):
+                for x in range(len(curr)):
+                    mc_x = x + int(flow[x, y, 0])
+                    mc_y = y + int(flow[x, y, 1])
+                    if mc_x >= len(curr):
+                        mc_x = x
+
+                    if mc_y >= len(curr[0]):
+                        mc_y = y
+
+                    mc_frame[x, y, c] = curr[mc_x, mc_y, c]
+
+        return mc_frame
+
 
     def do_augmentation(
         self,
@@ -247,7 +278,7 @@ class DataManagement:
         noise_types = ["gaussian", "s&p", "poisson", "speckle"]
         # fmt: off
         rotations = [
-            1, 5, 10, 15, 20, 30, 40, 45, 55, 60, 75, 90, 120, 150, 160, 180, 270, 290,
+            1, 5, 10, 15, 20, 30, 40, 45, 55, 60, 75, 90, 120, 150, 160, 180, 270, 290, 310, 330, 350, 360
         ]  # anti-clockwise
         contrast_values = [
             0.5, 0.75, 0.85, 0.99, 1.0, 1.01, 1.15, 1.25, 1.5,
