@@ -88,7 +88,7 @@ class ModelClass:
         :return: History of trained model
         """
         verbosity = 1
-        max_time_seconds = int(60 * 60 * 12)
+        max_time_seconds = int(60 * 60 * 10)
         monitor_metric = "val_mse_vid"
         cb = list()
         cb_patience = min(int(run_epochs * 0.15), 20)
@@ -166,8 +166,7 @@ class ModelClass:
             lr (float32): learning rate
         """
         lr = 1e-3
-        # if epoch > 180:
-        if epoch > 10:
+        if epoch > 180:
             lr *= 0.5e-3
         elif epoch > 160:
             lr *= 1e-3
