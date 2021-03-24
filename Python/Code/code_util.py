@@ -120,8 +120,8 @@ class DataManagement:
 
         for i in frames:
             # if i == 0:
-            cap.set(1, i)
-            ret, frame = cap.read()
+                cap.set(1, i)
+                ret, frame = cap.read()
             # else:
             #     cap.set(1, i)
             #     ret, frame_pr = cap.read()
