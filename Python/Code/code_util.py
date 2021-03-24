@@ -130,7 +130,7 @@ class DataManagement:
                 frame = self.motion_compensation(frame_pr, frame_cr)
 
             print(type(frame))
-            print(len(frame))
+            print(frame.shape)
 
             if not ret:
                 if get_frames is not None:
