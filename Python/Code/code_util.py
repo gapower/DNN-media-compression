@@ -153,6 +153,64 @@ class DataManagement:
 
         return vid
 
+    def reprocess_video(
+        self,
+        video_path,
+        mode: dict = None,
+        do_conversion: bool = True,
+        plot: bool = False,
+        get_frames: np.ndarray = None,
+        **dims,
+    ) -> list:
+        """
+        Preprocess images, scale and convert to numpy array for feeding to model.
+        :param video_path: Path to video
+        :param mode: Mode to process frames
+        :param do_conversion: Boolean - do conversion to other colourspace
+        :param plot: Boolean - to show frames
+        :param get_frames: Frames to get -- when using generator
+        :param dims: Image dimensions to be used, tuple - (height, width, channels)
+        :return: Processed frames as list of np.ndarray elements
+        """
+        if get_frames is not None:
+            # Video is already opened and streaming
+            cap = video_path
+        else:
+            cap = cv2.VideoCapture(video_path)
+        if not cap.isOpened():
+            raise UserWarning("Cannot read video, is codec installed?")
+
+        vid = list()
+        frames = get_frames if get_frames is not None else range(int(self.frames))
+
+        for i in frames:
+            cap.set(1, i)
+            ret, frame = cap.read()
+
+            if not ret:
+                if get_frames is not None:
+                    frame = np.copy(vid[-1])
+                    frame.fill(0)
+                else:
+                    break
+            if i < 0:
+                frame.fill(0)
+            frame = frame.astype(self.precision, copy=False)
+            frame = self.check_dims(frame, dims.get("dims", frame.shape))
+            frame = self.do_augmentation(
+                mode, frame, do_conversion=do_conversion, frame=True
+            )
+            if plot:
+                plt.figure()
+                plt.imshow(frame.astype(float))
+                # Choice of colourspace may affect how output is represented, matplotlib assumes RGB
+                # OpenCV defaults to BGR
+                plt.show()
+            vid.append(frame)
+        cap.release()
+
+        return vid
+
     def motion_compensation(
         self,
         curr,
@@ -1100,7 +1158,7 @@ class DataManagement:
         num_frames = metadata.get("frames")
         mid_frame = int(self.frames / 2)
         frames = np.arange(-mid_frame, num_frames + mid_frame)
-        train_video = self.preprocess_video(
+        train_video = self.reprocess_video(
             train_video, get_frames=frames, **self.input_dims
         )
         total_time = 0.0
