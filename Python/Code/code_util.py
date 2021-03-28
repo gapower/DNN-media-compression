@@ -159,8 +159,6 @@ class DataManagement:
         prev
     ):
 
-        print(curr.shape)
-
         curr_g = cv2.cvtColor(curr, cv2.COLOR_RGB2GRAY)
         prev_g = cv2.cvtColor(prev, cv2.COLOR_RGB2GRAY)
 
