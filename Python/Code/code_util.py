@@ -168,8 +168,8 @@ class DataManagement:
 
         mc_frame = curr
         for c in range(3):
-            for y in range(len(curr[0])):
-                for x in range(len(curr)):
+            for y in range(len(curr[0]) - 1):
+                for x in range(len(curr) - 1):
                     mc_x = x + int(flow[x, y, 0])
                     mc_y = y + int(flow[x, y, 1])
                     if mc_x >= len(curr):
