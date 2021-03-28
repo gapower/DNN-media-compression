@@ -161,15 +161,15 @@ class DataManagement:
 
         print(curr.shape)
 
-        curr_g = cv2.cvtColor(curr[:, :, 0], cv2.COLOR_YUV420P2GRAY)
-        prev_g = cv2.cvtColor(prev[:, :, 0], cv2.COLOR_YUV420P2GRAY)
+        curr_g = cv2.cvtColor(curr, cv2.COLOR_RGB2GRAY)
+        prev_g = cv2.cvtColor(prev, cv2.COLOR_RGB2GRAY)
 
         flow = cv2.calcOpticalFlowFarneback(prev_g, curr_g, None, 0.5, 3, 15, 3, 5, 1.2, 0)
 
         mc_frame = curr
         for c in range(3):
-            for y in range(len(curr[0]) - 1):
-                for x in range(len(curr) - 1):
+            for y in range(len(curr[0])):
+                for x in range(len(curr)):
                     mc_x = x + int(flow[x, y, 0])
                     mc_y = y + int(flow[x, y, 1])
                     if mc_x >= len(curr):
