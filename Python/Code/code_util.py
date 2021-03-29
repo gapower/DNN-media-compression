@@ -1184,7 +1184,7 @@ class DataManagement:
         self.deprocess_video(predicted_frames, "trained")
 
         original_video = self.load_video(original_video)
-        original_video = self.preprocess_video(
+        original_video = self.reprocess_video(
             original_video, get_frames=frames, do_conversion=False, **self.input_dims
         )
         original_video = np.asarray(original_video, dtype=self.precision)
