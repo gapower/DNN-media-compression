@@ -126,8 +126,9 @@ class DataManagement:
                 cap.set(1, i)
                 ret, frame_pr = cap.read()
                 cap.set(1, i - 1)
-                ret_cr, frame_cr = cap.read()
-                frame = self.motion_compensation(frame_pr, frame_cr)
+                ret_cr, frame = cap.read()
+                # COMMENT OUT THIS LINE TO REMOVE MOTION COMPENSATION
+                # frame = self.motion_compensation(frame_pr, frame)
 
             if not ret:
                 if get_frames is not None:
