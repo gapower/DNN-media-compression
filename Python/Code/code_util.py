@@ -624,9 +624,9 @@ class DataManagement:
         :param file_type: Extension of files to load
         :return: model inputs, labels
         """
-        dims = self.get_input_dims()
+        # dims = self.get_input_dims()
         # DOWNSIZING OCCURS HERE
-        self.set_input_dims(dims[1:])
+        # self.set_input_dims(dims[1:])
         while True:
             # Select files for the batch
             batch_paths = np.random.choice(a=files, size=batch_size)
