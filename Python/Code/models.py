@@ -1070,8 +1070,8 @@ class GP_3D_1(ModelClass):
         conv3_2 = Conv3D(filters=27, kernel_size=(2, 7, 7), activation="relu")(zpad2)
         merge3 = concatenate([conv3_1, conv3_2], axis=1)
 
-        conv4_1 = Conv3D(filters=81, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge3)
-        conv4_2 = Conv3D(filters=81, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge3)
+        conv4_1 = Conv3D(filters=54, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge3)
+        conv4_2 = Conv3D(filters=54, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge3)
         merge4 = concatenate([conv4_1, conv4_2], axis=1)
 
         up1 = UpSampling3D(size=(1, 2, 2))(merge4)
