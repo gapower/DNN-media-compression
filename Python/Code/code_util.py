@@ -847,6 +847,10 @@ class DataManagement:
                 for i in training_data.history["mse_vid"]:
                     out_file.write(str(i))
                     out_file.write("\n")
+                out_file.write("----VAL----\n")
+                for i in training_data.history["val_mse_vid"]:
+                    out_file.write(str(i))
+                    out_file.write("\n")
 
             with open("psnr.txt", "a") as out_file:
                 out_file.write(f"compressed_path: {self.compressed_data_path}\n")
@@ -855,12 +859,20 @@ class DataManagement:
                 for i in training_data.history["tf_psnr_vid"]:
                     out_file.write(str(i))
                     out_file.write("\n")
+                out_file.write("----VAL----\n")
+                for i in training_data.history["val_tf_psnr_vid"]:
+                    out_file.write(str(i))
+                    out_file.write("\n")
 
             with open("msssim.txt", "a") as out_file:
                 out_file.write(f"compressed_path: {self.compressed_data_path}\n")
                 out_file.write(f"out_path: {self.out_path}\n")
                 out_file.write(f"MS-SSIM: ")
                 for i in training_data.history["tf_ms_ssim_vid"]:
+                    out_file.write(str(i))
+                    out_file.write("\n")
+                out_file.write("----VAL----\n")
+                for i in training_data.history["val_tf_ms_ssim_vid"]:
                     out_file.write(str(i))
                     out_file.write("\n")
 
