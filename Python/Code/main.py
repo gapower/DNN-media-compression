@@ -9,6 +9,7 @@ from keras import optimizers
 import code_util as util
 import loss
 import argparse
+from keras.models import load_model
 
 
 def main(
@@ -50,7 +51,7 @@ def main(
         else:
             chosen_model = model_class(input_dims, **kwargs)
             model = chosen_model.build()
-            model.load_model("/content/drive/My Drive/Fifth Year/MAI/Databases/Out/GP_3D_1/sub_640p/LowQual/5_optimiser=Adam_epochs=16_batch_size=1_lr=0.0001625/Model/GP_3D_1.h5")
+            model = load_model("/content/drive/My Drive/Fifth Year/MAI/Databases/Out/GP_3D_1/sub_640p/LowQual/5_optimiser=Adam_epochs=16_batch_size=1_lr=0.0001625/Model/GP_3D_1.h5")
             model.load_weights("/content/drive/My Drive/Fifth Year/MAI/Databases/Out/GP_3D_1/sub_640p/LowQual/5_optimiser=Adam_epochs=16_batch_size=1_lr=0.0001625/Model/GP_3D_1_weights.h5")
 
         kwargs.pop("c_space")
