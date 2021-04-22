@@ -143,7 +143,7 @@ class ModelClass:
             workers=1,
             use_multiprocessing=False,
             shuffle=True,
-            initial_epoch=58,
+            initial_epoch=72,
         )
 
         end = timer()
