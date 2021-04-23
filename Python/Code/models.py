@@ -977,7 +977,7 @@ class GP_3D(ModelClass):
         frames = self.input.shape[1]
         print("Frames: " + str(frames))
         mid_frame = int(frames / 2)
-        print("Mid Frame: " + str(mid_frame))
+        # print("Mid Frame: " + str(mid_frame))
         width = self.input.shape[3]
         print("Width: " + str(width))
         height = self.input.shape[2]
@@ -985,7 +985,7 @@ class GP_3D(ModelClass):
         channels = self.input.shape[4]
         print("Channels: " + str(channels))
 
-        zpad1 = ZeroPadding3D(padding=(0, 2, 1))(self.input[:, :, :, 1])
+        zpad1 = ZeroPadding3D(padding=(0, 2, 1))(self.input)
         conv1_1 = Conv3D(filters=3, kernel_size=(2, 3, 3), activation="relu")(zpad1)
         conv1_2 = Conv3D(filters=3, kernel_size=(2, 3, 3), activation="relu")(zpad1)
         merge1 = concatenate([conv1_1, conv1_2], axis=1)
