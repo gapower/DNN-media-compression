@@ -450,10 +450,8 @@ class DataManagement:
                 if image.shape[1] == desired_dims[0]:
                     image = np.rot90(image)
             if image.shape[2] != desired_dims[2]:
-                print(image.shape[0])
-                print(image.shape[2])
-                print(desired_dims[2])
-                image = image.reshape([image.shape[0], image.shape[1], desired_dims[2]])
+                image = image[:,:,1]
+                #image = image.reshape([image.shape[0], image.shape[1], desired_dims[2]])
             if not check_ok(image.shape, desired_dims):
                 try:
                     image = cv2.resize(
