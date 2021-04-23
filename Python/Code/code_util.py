@@ -1104,7 +1104,7 @@ class DataManagement:
             reverse=True,
         )
         if training_data:
-            qualities = qualities[:3]  # get top 3
+            qualities = qualities[:4]  # get top 3
         for quality in tqdm(qualities, position=0, leave=True):
             match_string = f"_{quality}.mp4"
             for i, video_file in enumerate(
