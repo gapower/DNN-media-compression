@@ -325,6 +325,7 @@ class DataManagement:
                     img = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)  # BGR -> YUV
                     print(img.shape)
                     img = img[:, :, 1]
+                    print(img.shape)
                 elif self.c_space == "RGB":
                     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # BGR -> RGB
             else:
