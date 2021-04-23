@@ -323,6 +323,7 @@ class DataManagement:
             if frame:
                 if self.c_space == "YUV":
                     img = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)  # BGR -> YUV
+                    img = img[:, :, 1]
                 elif self.c_space == "RGB":
                     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # BGR -> RGB
             else:
@@ -449,10 +450,8 @@ class DataManagement:
             if image.shape[0] != desired_dims[0]:
                 if image.shape[1] == desired_dims[0]:
                     image = np.rot90(image)
-            if image.shape[2] != desired_dims[2]:
-                image = image[:, :, desired_dims[2]]
-                print(image.size)
-                #image = image.reshape([image.shape[0], image.shape[1], desired_dims[2]])
+            if image.shape[2] != desired_dims[2] and desired_dims[2] is not 1:
+                image = image.reshape([image.shape[0], image.shape[1], desired_dims[2]])
             if not check_ok(image.shape, desired_dims):
                 try:
                     image = cv2.resize(
