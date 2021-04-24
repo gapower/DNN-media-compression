@@ -1249,6 +1249,7 @@ class DataManagement:
         :param classname: Name of model for instantiation
         :return: Constructor for specified model
         """
+        print("Classname: " + str(classname))
         return getattr(sys.modules[__name__].models, classname)
 
     def load_pickled(self, pickle_file: str = "history") -> dict:
