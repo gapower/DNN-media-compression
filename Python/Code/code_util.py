@@ -492,7 +492,7 @@ class DataManagement:
             if frame:
                 if img.shape[-1] == 1:
                     img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)  # YUV -> BGR
-                if self.c_space == "YUV":
+                elif self.c_space == "YUV":
                     img = cv2.cvtColor(img, cv2.COLOR_YUV2BGR)  # YUV -> BGR
                 elif self.c_space == "RGB":
                     img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)  # RGB -> BGR
