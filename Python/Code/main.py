@@ -26,6 +26,7 @@ def main(
     if loaded_model:
         model = model_class
         data_class.precision = model.input.dtype.name
+        print(model.input.shape)
         input_shape = tuple(model.input.shape)
         try:
             history = data_class.load_pickled("history")
