@@ -149,7 +149,7 @@ if __name__ == "__main__":
         dest="train",
         action="store_true",
         help="Only produce output from loaded model",
-        default=True,
+        default=False,
     )
     parser.add_argument(
         "-s",
