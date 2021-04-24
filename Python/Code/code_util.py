@@ -483,37 +483,35 @@ class DataManagement:
         :param plot: Boolean - to plot image for viewing
         :return: Restored image
         """
-        #if img.shape[-1] != 3:
-            #raise ValueError("Not RGB")
-        if len(img.shape) > 3:
-            img = img.reshape((img.shape[-3], img.shape[-2], img.shape[-1]))
+        if self.input_dims["c"] is not 1:
 
-        if do_conversion:
-            if frame:
-                #ADded
-                if img.shape[-1] != 3:
-                    img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)  # YUV -> BGR
-                    #ss
-                elif self.c_space == "YUV":
-                    img = cv2.cvtColor(img, cv2.COLOR_YUV2BGR)  # YUV -> BGR
-                elif self.c_space == "RGB":
-                    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)  # RGB -> BGR
-            else:
-                if self.c_space == "YUV":
-                    img = cv2.cvtColor(img, cv2.COLOR_YUV2RGB)  # YUV -> RGB
-                elif self.c_space == "BGR":
-                    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # BGR -> RGB
-            img = np.clip(img, 0.0, None)
-        try:
-            img *= 255.0
-        except RuntimeWarning:
-            pass
-        img = np.clip(img, 0, 255).astype("uint8")
+            if img.shape[-1] != 3:
+                raise ValueError("Not RGB")
+            if len(img.shape) > 3:
+                img = img.reshape((img.shape[-3], img.shape[-2], img.shape[-1]))
 
-        if plot:
-            plt.figure()
-            plt.imshow(img)
-            plt.show()
+            if do_conversion:
+                if frame:
+                    if self.c_space == "YUV":
+                        img = cv2.cvtColor(img, cv2.COLOR_YUV2BGR)  # YUV -> BGR
+                    elif self.c_space == "RGB":
+                        img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)  # RGB -> BGR
+                else:
+                    if self.c_space == "YUV":
+                        img = cv2.cvtColor(img, cv2.COLOR_YUV2RGB)  # YUV -> RGB
+                    elif self.c_space == "BGR":
+                        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # BGR -> RGB
+                img = np.clip(img, 0.0, None)
+            try:
+                img *= 255.0
+            except RuntimeWarning:
+                pass
+            img = np.clip(img, 0, 255).astype("uint8")
+
+            if plot:
+                plt.figure()
+                plt.imshow(img)
+                plt.show()
 
         return img
 
@@ -1185,15 +1183,16 @@ class DataManagement:
 
         for i in range(num_frames):
             start = timer()
-            pred_frame = model.predict(train_video[:, i: i + self.frames, :, :, 1])
+            pred_frame = train_video[:, i: i + self.frames, :, :, :]
+            print(pred_frame.shape)
+            pred_frame[:, :, 0] = model.predict(train_video[:, i: i + self.frames, :, :, 0])
             #pred_frame = model.predict(train_video[:, i: i + self.frames])
             end = timer()
             frames_predicted = pred_frame.shape[1]
             if frames_predicted > 1:
                 # Not LSTM, multiple output
                 pred_frame = pred_frame[:, int(frames_predicted / 2)]
-            predicted_frames = pred_frame[:, :, :, :, 1]
-            #predicted_frames = pred_frame
+            predicted_frames = pred_frame
             total_time += (end - start) * 1000
 
         # Use np.delete() if memory issues
