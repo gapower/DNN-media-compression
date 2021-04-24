@@ -7,7 +7,7 @@ import pickle
 import models
 from datetime import timedelta
 from keras.models import load_model, Model
-from keras.engine.functional import Functional
+#from keras.engine.network import Fun
 from keras_preprocessing.image import load_img, img_to_array, save_img
 import matplotlib.pyplot as plt
 import numpy as np
@@ -1285,7 +1285,7 @@ class DataManagement:
         :return: True if model, else false
         """
         print(str(type(model)))
-        return type(model) == Functional
+        return type(model) == Model
 
     def do_saving(self, model: models, history, model_path: str):
         """
