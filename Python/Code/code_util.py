@@ -1191,7 +1191,7 @@ class DataManagement:
             if frames_predicted > 1:
                 # Not LSTM, multiple output
                 pred_frame = pred_frame[:, int(frames_predicted / 2)]
-            predicted_frames[i] = pred_frame
+            predicted_frames = pred_frame[:, :, :, :, 1]
             total_time += (end - start) * 1000
 
         # Use np.delete() if memory issues
