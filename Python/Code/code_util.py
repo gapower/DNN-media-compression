@@ -490,8 +490,7 @@ class DataManagement:
 
         if do_conversion:
             if frame:
-                print(img.shape[-1])
-                if img.shape[-1] == 1:
+                if img.shape[-1] != 3:
                     img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)  # YUV -> BGR
                 elif self.c_space == "YUV":
                     img = cv2.cvtColor(img, cv2.COLOR_YUV2BGR)  # YUV -> BGR
