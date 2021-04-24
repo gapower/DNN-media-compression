@@ -1176,12 +1176,15 @@ class DataManagement:
         total_time = 0.0
         train_video = np.expand_dims(train_video, axis=0)
         video_size = (num_frames,) + self.input_dims["dims"]
+        print(video_size)
         # (frames, height, width, channels)
         predicted_frames = np.zeros(video_size, dtype=self.precision)
 
         for i in range(num_frames):
             start = timer()
             pred_frame = model.predict(train_video[:, i: i + self.frames, :, :, 1])
+            print(pred_frame.shape)
+            print(pred_frame.size)
             #pred_frame = model.predict(train_video[:, i: i + self.frames])
             end = timer()
             frames_predicted = pred_frame.shape[1]
