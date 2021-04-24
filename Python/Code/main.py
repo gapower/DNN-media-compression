@@ -147,7 +147,7 @@ if __name__ == "__main__":
         dest="train",
         action="store_true",
         help="Only produce output from loaded model",
-        default=False,
+        default=True,
     )
     parser.add_argument(
         "-s",
@@ -155,7 +155,7 @@ if __name__ == "__main__":
         dest="seq",
         action="store_true",
         help="Boolean - training sequences (video)",
-        default=True,
+        default=False,
     )
     parser.add_argument(
         "-e",
