@@ -23,6 +23,9 @@ def main(
     params = dict()
     print("Model: " + str(model_class))
     loaded_model = data_class.loaded_model(model_class)
+    print(loaded_model)
+    print(loaded_model.size)
+    print(loaded_model.shape)
     if loaded_model:
         model = model_class
         data_class.precision = model.input.dtype.name
@@ -44,9 +47,6 @@ def main(
             data_class.set_input_dims(input_shape[1:])
     if not loaded_model or continue_training:
         input_dims = data_class.get_input_dims()
-        chosen_model = model_class(input_dims, **kwargs)
-        model = chosen_model.build()
-        model.load_weights("/content/drive/My Drive/Fifth Year/MAI/Databases/Out/GP_3D/sub_640p/LowQual/Y_optimiser=Adam_epochs=17_batch_size=4_lr=0.0005/Model/GP_3D_weights.h5")
         if loaded_model:
             chosen_model = data_class.get_model_from_string(model.name)(
                 input_dims, **kwargs
