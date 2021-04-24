@@ -24,14 +24,14 @@ class DataManagement:
     """
 
     def __init__(
-        self,
-        script_dir: str,
-        sequences: bool,
-        c_data: str,
-        o_data: str,
-        out_dir: str,
-        input_dims: str,
-        c_space: str,
+            self,
+            script_dir: str,
+            sequences: bool,
+            c_data: str,
+            o_data: str,
+            out_dir: str,
+            input_dims: str,
+            c_space: str,
     ):
         """
         Initialise class - generally specified through runtime args in main.py
@@ -60,12 +60,12 @@ class DataManagement:
         self.c_space = c_space.upper()
 
     def preprocess_image(
-        self,
-        image_path: str,
-        mode: dict = None,
-        do_conversion: bool = True,
-        plot: bool = False,
-        **dims,
+            self,
+            image_path: str,
+            mode: dict = None,
+            do_conversion: bool = True,
+            plot: bool = False,
+            **dims,
     ) -> np.ndarray:
         """
         Preprocess images, scale and convert to numpy array for feeding to model.
@@ -89,13 +89,13 @@ class DataManagement:
         return img
 
     def preprocess_video(
-        self,
-        video_path,
-        mode: dict = None,
-        do_conversion: bool = True,
-        plot: bool = False,
-        get_frames: np.ndarray = None,
-        **dims,
+            self,
+            video_path,
+            mode: dict = None,
+            do_conversion: bool = True,
+            plot: bool = False,
+            get_frames: np.ndarray = None,
+            **dims,
     ) -> list:
         """
         Preprocess images, scale and convert to numpy array for feeding to model.
@@ -155,13 +155,13 @@ class DataManagement:
         return vid
 
     def reprocess_video(
-        self,
-        video_path,
-        mode: dict = None,
-        do_conversion: bool = True,
-        plot: bool = False,
-        get_frames: np.ndarray = None,
-        **dims,
+            self,
+            video_path,
+            mode: dict = None,
+            do_conversion: bool = True,
+            plot: bool = False,
+            get_frames: np.ndarray = None,
+            **dims,
     ) -> list:
         """
         Preprocess images, scale and convert to numpy array for feeding to model.
@@ -213,9 +213,9 @@ class DataManagement:
         return vid
 
     def motion_compensation(
-        self,
-        curr,
-        prev
+            self,
+            curr,
+            prev
     ):
 
         curr_g = cv2.cvtColor(curr, cv2.COLOR_RGB2GRAY)
@@ -239,13 +239,12 @@ class DataManagement:
 
         return mc_frame
 
-
     def do_augmentation(
-        self,
-        aug_type: dict,
-        img: np.ndarray,
-        do_conversion: bool = True,
-        frame: bool = False,
+            self,
+            aug_type: dict,
+            img: np.ndarray,
+            do_conversion: bool = True,
+            frame: bool = False,
     ) -> np.ndarray:
         """
         Function to do some augmentations to an image, diversifying training data
@@ -400,7 +399,7 @@ class DataManagement:
         if not video.isOpened():
             raise UserWarning(f"Cannot read video at {video_path}\nIs codec installed?")
 
-       # print("Video: " + str(video_path))
+        # print("Video: " + str(video_path))
         return video
 
     def video_metadata(self, video: cv2.VideoCapture) -> dict:
@@ -419,9 +418,9 @@ class DataManagement:
         fps = (num_frames / msec_dur) * 1000
         metadata.update({"fps": fps})
 
-       # print("Video duration: " + str(msec_dur))
-       # print("Video Frames: " + str(num_frames))
-       # print("Video FPS: " + str(fps))
+        # print("Video duration: " + str(msec_dur))
+        # print("Video Frames: " + str(num_frames))
+        # print("Video FPS: " + str(fps))
 
         if not self.fps:
             self.fps = fps
@@ -469,11 +468,11 @@ class DataManagement:
         return image
 
     def deprocess_image(
-        self,
-        img: np.ndarray,
-        do_conversion: bool = False,
-        frame: bool = False,
-        plot: bool = False,
+            self,
+            img: np.ndarray,
+            do_conversion: bool = False,
+            frame: bool = False,
+            plot: bool = False,
     ) -> np.ndarray:
         """
         Convert the predicted image from the model back to [0..255] for viewing / saving.
@@ -549,7 +548,7 @@ class DataManagement:
             for f in os.listdir(self.compressed_data_path)
         ]
 
-        #print("\n\nFiles in Generator Function: " + str(files) + "\n\n")
+        # print("\n\nFiles in Generator Function: " + str(files) + "\n\n")
 
         if validate:
             np.random.shuffle(files)
@@ -566,7 +565,7 @@ class DataManagement:
         return train_files, validate_files, function
 
     def image_generator(
-        self, files: list, batch_size: int = 2, file_type: str = "png"
+            self, files: list, batch_size: int = 2, file_type: str = "png"
     ) -> tuple:
         """
         Generate training samples for image based models
@@ -635,7 +634,7 @@ class DataManagement:
             # Read in each input, perform pre-processing and get labels (original images)
             for input_video in batch_paths:
 
-               # print("Video: " + str(input_video))
+                # print("Video: " + str(input_video))
 
                 augment = self.get_augemntations()
                 # Load video
@@ -645,7 +644,7 @@ class DataManagement:
                 # TODO - Handle blank before / after frames
                 start_frame = np.random.choice(a=metadata.get("frames") - self.frames)
 
-               # print("Start frame:" + str(start_frame))
+                # print("Start frame:" + str(start_frame))
 
                 frames = np.arange(start_frame, start_frame + self.frames)
                 input = self.preprocess_video(
@@ -739,7 +738,7 @@ class DataManagement:
             # Create folder name based on params
             f_name += "optimiser={}_epochs={}_batch_size={}_lr={}".format(
                 training_data.model.optimizer.iterations.name.split("/")[0],
-                #training_data.params["epochs"],
+                # training_data.params["epochs"],
                 len(training_data.epoch),
                 training_data.params["batch_size"],
                 training_data.params["lr"],
@@ -756,10 +755,10 @@ class DataManagement:
 
             # Create plots to save training records
             fig_1 = plt.figure()
-           # print("MS-SSIM")
-           # print(training_data.history["tf_ms_ssim_vid"])
-           # print("PSNR")
-           # print(training_data.history["tf_psnr_vid"])
+            # print("MS-SSIM")
+            # print(training_data.history["tf_ms_ssim_vid"])
+            # print("PSNR")
+            # print(training_data.history["tf_psnr_vid"])
             plt.plot(
                 np.asarray(training_data.history[f"{ms_ssim}"]) * -1.0,
                 label=f"MS-SSIM Training Loss",
@@ -887,12 +886,12 @@ class DataManagement:
         return t_dir
 
     def output_results_images(
-        self,
-        model: models,
-        training_data=None,
-        loaded_model: bool = False,
-        continue_training: bool = False,
-        **kwargs,
+            self,
+            model: models,
+            training_data=None,
+            loaded_model: bool = False,
+            continue_training: bool = False,
+            **kwargs,
     ):
         """
         Produce statistics and samples from training image based model
@@ -939,7 +938,7 @@ class DataManagement:
         for quality in tqdm(qualities, position=0, leave=True):
             match_string = f"_{quality}.jpg"
             for i, image_file in enumerate(
-                glob.glob(self.compressed_data_path + f"/*{match_string}"), start=1
+                    glob.glob(self.compressed_data_path + f"/*{match_string}"), start=1
             ):
                 base_name = self.get_base_filename(image_file, re_exp)
                 original_image = os.path.join(
@@ -970,13 +969,13 @@ class DataManagement:
         return avg_time
 
     def output_helper_images(
-        self,
-        output_directory: str,
-        input_image: str,
-        original_image: str,
-        model: models,
-        output_append=None,
-        plot: bool = False,
+            self,
+            output_directory: str,
+            input_image: str,
+            original_image: str,
+            model: models,
+            output_append=None,
+            plot: bool = False,
     ) -> float:
         """
         Utility function for creating model outputs, used when training or lading model for metrics
@@ -1038,12 +1037,12 @@ class DataManagement:
         return (end - start) * 1000
 
     def output_results_videos(
-        self,
-        model: models,
-        training_data: bool = None,
-        loaded_model: bool = False,
-        continue_training: bool = False,
-        **kwargs,
+            self,
+            model: models,
+            training_data: bool = None,
+            loaded_model: bool = False,
+            continue_training: bool = False,
+            **kwargs,
     ) -> float:
         """
         Produce statistics and samples from training image based model
@@ -1075,13 +1074,13 @@ class DataManagement:
             self.out_path = os.path.join(self.out_path, self.unique_file(dir_name))
             os.chdir(return_dir)
         else:
-            #training_dims = f"{model.input_shape[3]}x{model.input_shape[2]}"
+            # training_dims = f"{model.input_shape[3]}x{model.input_shape[2]}"
             self.out_path = os.path.join(self.out_path, model.name, encoder)
             if low_qual:
                 self.out_path = os.path.join(self.out_path, low_qual)
-            #if no_deblock:
-             #   self.out_path = os.path.join(self.out_path, no_deblock)
-            #self.out_path = os.path.join(self.out_path, training_dims)
+            # if no_deblock:
+            #   self.out_path = os.path.join(self.out_path, no_deblock)
+            # self.out_path = os.path.join(self.out_path, training_dims)
 
         t_dir = self.output_helper(model, training_data)
 
@@ -1107,7 +1106,7 @@ class DataManagement:
         for quality in tqdm(qualities, position=0, leave=True):
             match_string = f"_{quality}.mp4"
             for i, video_file in enumerate(
-                glob.glob(self.compressed_data_path + f"/*{match_string}"), start=1
+                    glob.glob(self.compressed_data_path + f"/*{match_string}"), start=1
             ):
                 base_name = self.get_base_filename(video_file, re_exp)
                 original_video = os.path.join(
@@ -1138,13 +1137,13 @@ class DataManagement:
         return avg_time
 
     def output_helper_video(
-        self,
-        output_directory: str,
-        input_video: str,
-        original_video: str,
-        model: models,
-        output_append=None,
-        plot=False,
+            self,
+            output_directory: str,
+            input_video: str,
+            original_video: str,
+            model: models,
+            output_append=None,
+            plot=False,
     ) -> float:
         """
         Utility function for creating model outputs, used when training or lading model for metrics
@@ -1181,7 +1180,7 @@ class DataManagement:
 
         for i in range(num_frames):
             start = timer()
-            pred_frame = model.predict(train_video[:, i : i + self.frames])
+            pred_frame = model.predict(train_video[:, i: i + self.frames])
             end = timer()
             frames_predicted = pred_frame.shape[1]
             if frames_predicted > 1:
@@ -1205,12 +1204,12 @@ class DataManagement:
         return total_time / num_frames
 
     def deprocess_video(
-        self,
-        video: np.ndarray,
-        file_name: str,
-        file_format: str = "mkv",
-        do_conversion: bool = True,
-        **kwargs,
+            self,
+            video: np.ndarray,
+            file_name: str,
+            file_format: str = "mkv",
+            do_conversion: bool = True,
+            **kwargs,
     ):
         """
         Convert the video from a numpy array back to [0..255] for viewing / saving.
