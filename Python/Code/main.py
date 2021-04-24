@@ -155,7 +155,7 @@ if __name__ == "__main__":
         dest="seq",
         action="store_true",
         help="Boolean - training sequences (video)",
-        default=False,
+        default=True,
     )
     parser.add_argument(
         "-e",
