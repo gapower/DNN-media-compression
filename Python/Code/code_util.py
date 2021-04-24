@@ -1182,7 +1182,6 @@ class DataManagement:
 
         for i in range(num_frames):
             start = timer()
-            pred_frame = predicted_frames[i, :, :, :]
             pred_frame = model.predict(train_video[:, i: i + self.frames, :, :, 0])
             #pred_frame = model.predict(train_video[:, i: i + self.frames])
             end = timer()
