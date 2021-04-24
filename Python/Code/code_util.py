@@ -1186,7 +1186,7 @@ class DataManagement:
             start = timer()
             pred_frame = predicted_frames[i, :, :, :]
             print(pred_frame.shape)
-            pred_frame[:, :, 0] = model.predict(train_video[:, i: i + self.frames, :, :, 0])
+            pred_frame = model.predict(train_video[:, i: i + self.frames, :, :, 0])
             print(pred_frame.shape)
             #pred_frame = model.predict(train_video[:, i: i + self.frames])
             end = timer()
