@@ -24,8 +24,6 @@ def main(
     print("Model: " + str(model_class))
     loaded_model = data_class.loaded_model(model_class)
     print(loaded_model)
-    print(loaded_model.size)
-    print(loaded_model.shape)
     if loaded_model:
         model = model_class
         data_class.precision = model.input.dtype.name
