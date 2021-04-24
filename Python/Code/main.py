@@ -21,7 +21,7 @@ def main(
 ):
     history = dict()
     params = dict()
-    print("Model: " + str(model_class))
+    print("Model: " + args.model)
     loaded_model = data_class.loaded_model(model_class)
     print(loaded_model)
     if loaded_model:
