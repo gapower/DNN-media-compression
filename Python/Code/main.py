@@ -43,6 +43,10 @@ def main(
         else:
             data_class.set_input_dims(input_shape[1:])
     if not loaded_model or continue_training:
+
+        chosen_model = model_class(input_dims, **kwargs)
+        model = chosen_model.build()
+        model.load_weights("/content/drive/My Drive/Fifth Year/MAI/Databases/Out/GP_3D/sub_640p/LowQual/Y_optimiser=Adam_epochs=17_batch_size=4_lr=0.0005/Model/GP_3D_weights.h5")
         input_dims = data_class.get_input_dims()
         if loaded_model:
             chosen_model = data_class.get_model_from_string(model.name)(
