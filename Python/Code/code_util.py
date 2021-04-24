@@ -483,13 +483,15 @@ class DataManagement:
         :param plot: Boolean - to plot image for viewing
         :return: Restored image
         """
-        if img.shape[-1] != 3:
-            raise ValueError("Not RGB")
+        #if img.shape[-1] != 3:
+            #raise ValueError("Not RGB")
         if len(img.shape) > 3:
             img = img.reshape((img.shape[-3], img.shape[-2], img.shape[-1]))
 
         if do_conversion:
             if frame:
+                if img.shape[-1] == 1:
+                    img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)  # YUV -> BGR
                 if self.c_space == "YUV":
                     img = cv2.cvtColor(img, cv2.COLOR_YUV2BGR)  # YUV -> BGR
                 elif self.c_space == "RGB":
@@ -1176,15 +1178,12 @@ class DataManagement:
         total_time = 0.0
         train_video = np.expand_dims(train_video, axis=0)
         video_size = (num_frames,) + self.input_dims["dims"]
-        print(video_size)
         # (frames, height, width, channels)
         predicted_frames = np.zeros(video_size, dtype=self.precision)
 
         for i in range(num_frames):
             start = timer()
             pred_frame = model.predict(train_video[:, i: i + self.frames, :, :, 1])
-            print(pred_frame.shape)
-            print(pred_frame.size)
             #pred_frame = model.predict(train_video[:, i: i + self.frames])
             end = timer()
             frames_predicted = pred_frame.shape[1]
@@ -1192,6 +1191,7 @@ class DataManagement:
                 # Not LSTM, multiple output
                 pred_frame = pred_frame[:, int(frames_predicted / 2)]
             predicted_frames = pred_frame[:, :, :, :, 1]
+            #predicted_frames = pred_frame
             total_time += (end - start) * 1000
 
         # Use np.delete() if memory issues
