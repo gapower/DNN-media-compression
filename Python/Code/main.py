@@ -24,10 +24,12 @@ def main(
     print("Model: " + str(model_class))
     loaded_model = data_class.loaded_model(model_class)
     if loaded_model:
+        print(0)
         model = model_class
         data_class.precision = model.input.dtype.name
-        print(model.input.shape)
+        print(1)
         input_shape = tuple(model.input.shape)
+        print(2)
         try:
             history = data_class.load_pickled("history")
             params = data_class.load_pickled("params")
@@ -40,12 +42,17 @@ def main(
             # Continue with runtime arg
             pass
         if data_class.sequences:
+            print(3)
             data_class.set_input_dims(input_shape[2:])
+            print(4)
         else:
             data_class.set_input_dims(input_shape[1:])
     if not loaded_model or continue_training:
+        print(5)
         input_dims = data_class.get_input_dims()
+        print(6)
         if loaded_model:
+            print(7)
             chosen_model = data_class.get_model_from_string(model.name)(
                 input_dims, **kwargs
             )
