@@ -77,7 +77,7 @@ def main(
             else:
                 model.compile(
                     optimizer=adam,
-                    loss=loss.mse_vid,
+                    loss=loss.tf_ms_ssim_vid,
                     metrics=[loss.mse_vid, loss.tf_psnr_vid, loss.tf_ms_ssim_vid],
                 )
         else:
