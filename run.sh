@@ -28,7 +28,7 @@ od=$data_dir/Out
 
 # -m = model (path or name)
 #m="$data_dir/Out/GP_3D/sub_640p/LowQual/Y_optimiser=Adam_epochs=17_batch_size=4_lr=0.0005/Model/GP_3D.tf"
-m="GP_3D"
+m="GP_3D_Y"
 #m="Attempt1_3D"
 
 # -nt = no-train [Include if only loading model output]
