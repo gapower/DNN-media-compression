@@ -1178,16 +1178,19 @@ class DataManagement:
         video_size = (num_frames,) + self.input_dims["dims"]
         # (frames, height, width, channels)
         predicted_frames = np.zeros(video_size, dtype=self.precision)
+        predicted_frames = train_video
 
         for i in range(num_frames):
             start = timer()
-            pred_frame = model.predict(train_video[:, i : i + self.frames])
+            #pred_frame = model.predict(train_video[:, i : i + self.frames])
+            pred_frame = model.predict(train_video[:, i : i + self.frames)
             end = timer()
             frames_predicted = pred_frame.shape[1]
             if frames_predicted > 1:
                 # Not LSTM, multiple output
                 pred_frame = pred_frame[:, int(frames_predicted / 2)]
-            predicted_frames[i] = pred_frame
+            #predicted_frames[i] = pred_frame
+            predicted_frames[i, :, :, 0] = pred_frame[i, :, :, 0]
             total_time += (end - start) * 1000
 
         # Use np.delete() if memory issues
