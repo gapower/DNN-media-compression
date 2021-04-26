@@ -21,11 +21,7 @@ def main(
 ):
     history = dict()
     params = dict()
-    print("Model: " + args.model)
-    #loaded_model = data_class.loaded_model(model_class)
-    loaded_model = True
-    print(loaded_model)
-    print(continue_training)
+    loaded_model = data_class.loaded_model(model_class)
     if loaded_model:
         model = model_class
         data_class.precision = model.input.dtype.name
