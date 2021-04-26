@@ -523,7 +523,7 @@ class DataManagement:
             # Add number of frames to resolution
             # d = self.input_dims.get("dims", (256, 256, 3))
             # d = self.input_dims.get("dims", (352, 288, 3))
-            d = self.input_dims.get("dims", (426, 240, 1))
+            d = self.input_dims.get("dims", (426, 240, 3))
             d = (self.frames,) + d  # Place frames first
         else:
             d = self.input_dims.get("dims", (512, 768, 3))
@@ -1147,7 +1147,7 @@ class DataManagement:
             plot=False,
     ) -> float:
         """
-        Utility function for creating model outputs, used when training or lading model for metrics
+        Utility function for creating model outputs, used when training or loading model for metrics
         :param output_directory: path to put output
         :param input_video: path of model input
         :param original_video: path of corresponding label
