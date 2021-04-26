@@ -24,7 +24,6 @@ def main(
     #loaded_model = data_class.loaded_model(model_class)
     loaded_model = True
     continue_training = False
-    loaded_model = data_class.loaded_model(model_class)
     if loaded_model:
         model = model_class
         data_class.precision = model.input.dtype.name
