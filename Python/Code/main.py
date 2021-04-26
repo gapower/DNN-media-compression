@@ -21,7 +21,8 @@ def main(
 ):
     history = dict()
     params = dict()
-    loaded_model = data_class.loaded_model(model_class)
+    #loaded_model = data_class.loaded_model(model_class)
+    loaded_model = True
     if loaded_model:
         model = model_class
         data_class.precision = model.input.dtype.name
