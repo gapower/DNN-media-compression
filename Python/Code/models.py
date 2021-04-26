@@ -984,7 +984,7 @@ class GP_3D_Y(ModelClass):
         channels = self.input.shape[4]
         print("Channels: " + str(channels))
 
-        zpad1 = ZeroPadding3D(padding=(0, 2, 1))(self.input[:, :, :, 0])
+        zpad1 = ZeroPadding3D(padding=(0, 2, 1))(self.input[:, :, :, :, 0])
         conv1_1 = Conv3D(filters=3, kernel_size=(2, 3, 3), activation="relu")(zpad1)
         conv1_2 = Conv3D(filters=3, kernel_size=(2, 3, 3), activation="relu")(zpad1)
         merge1 = concatenate([conv1_1, conv1_2], axis=1)
@@ -1027,7 +1027,7 @@ class GP_3D_Y(ModelClass):
 
         decode = self.crop(1, mid_frame, mid_frame + 1)(merge7)
 
-        model = Model(self.input[:, :, :, 0], decode)
+        model = Model(self.input[:, :, :, :, 0], decode)
 
         model._name = self.name
 
