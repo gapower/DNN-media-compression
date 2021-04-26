@@ -1103,7 +1103,7 @@ class DataManagement:
             reverse=True,
         )
         if training_data:
-            qualities = qualities[:4]  # get top 3
+            qualities = qualities[:2]  # get top 3
         for quality in tqdm(qualities, position=0, leave=True):
             match_string = f"_{quality}.mp4"
             for i, video_file in enumerate(
@@ -1189,7 +1189,7 @@ class DataManagement:
 
         for i in range(num_frames):
             start = timer()
-            pred_frame = model.predict(train_video[:, i: i + self.frames, :, :, 0])
+            pred_frame = model.predict(train_video[:, i: i + self.frames, :, 0])
             #pred_frame = model.predict(train_video[:, i: i + self.frames])
             end = timer()
             frames_predicted = pred_frame.shape[1]
