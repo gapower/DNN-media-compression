@@ -1178,7 +1178,7 @@ class DataManagement:
         video_size = (num_frames,) + self.input_dims["dims"]
         # (frames, height, width, channels)
         predicted_frames = np.zeros(video_size, dtype=self.precision)
-        predicted_frames = train_video
+        predicted_frames = train_video[0, :, :, :, :]
 
         for i in range(num_frames):
             start = timer()
@@ -1191,7 +1191,6 @@ class DataManagement:
                 pred_frame = pred_frame[:, int(frames_predicted / 2)]
             #predicted_frames[i] = pred_frame
             predicted_frames[i, :, :, 0] = pred_frame[:, :, 0]
-            predicted_frames = pred_frame
             total_time += (end - start) * 1000
 
         # Use np.delete() if memory issues
