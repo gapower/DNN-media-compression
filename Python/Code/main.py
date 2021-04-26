@@ -21,9 +21,13 @@ def main(
 ):
     history = dict()
     params = dict()
+<<<<<<< HEAD
     #loaded_model = data_class.loaded_model(model_class)
     loaded_model = True
     continue_training = False
+=======
+    loaded_model = data_class.loaded_model(model_class)
+>>>>>>> 1a47d3db0a5b4ddac47cd0c97a6f2bb70102312d
     if loaded_model:
         model = model_class
         data_class.precision = model.input.dtype.name
@@ -53,6 +57,7 @@ def main(
             chosen_model = model_class(input_dims, **kwargs)
             model = chosen_model.build()
             #model.load_weights("/content/drive/My Drive/Fifth Year/MAI/Databases/Out/GP_3D_1/sub_640p/LowQual/01_optimiser=Adam_epochs=13_batch_size=1_lr=0.0005/Model/GP_3D_1_weights.h5")
+            #model.load_weights("/content/drive/My Drive/Fifth Year/MAI/Databases/Out/GP_3D/sub_640p/LowQual/Y_optimiser=Adam_epochs=17_batch_size=4_lr=0.0005/Model/GP_3D_weights.h5")
 
         kwargs.pop("c_space")
         # Setting learning rate from average of last model
