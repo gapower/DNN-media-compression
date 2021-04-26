@@ -985,6 +985,7 @@ class GP_3D_Y(ModelClass):
         print("Channels: " + str(channels))
 
         y = self.input[:, :, :, :, 0]
+        y = np.expand_dims(y, axis=4)
 
         print(self.input.shape)
         print(y.shape)
