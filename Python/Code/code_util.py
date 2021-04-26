@@ -1183,7 +1183,7 @@ class DataManagement:
         for i in range(num_frames):
             start = timer()
             #pred_frame = model.predict(train_video[:, i : i + self.frames])
-            pred_frame = model.predict(train_video[:, i : i + self.frames])
+            pred_frame = model.predict(train_video[:, i : i + self.frames, :, :, 0])
         #predicted_frames = np.zeros(video_size, dtype=self.precision)
         predicted_frames = train_video[0, :, :, :, :]
 
