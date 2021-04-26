@@ -1177,7 +1177,6 @@ class DataManagement:
         train_video = np.expand_dims(train_video, axis=0)
         video_size = (num_frames,) + self.input_dims["dims"]
         # (frames, height, width, channels)
-<<<<<<< HEAD
         predicted_frames = np.zeros(video_size, dtype=self.precision)
         predicted_frames = train_video
 
@@ -1185,7 +1184,6 @@ class DataManagement:
             start = timer()
             #pred_frame = model.predict(train_video[:, i : i + self.frames])
             pred_frame = model.predict(train_video[:, i : i + self.frames])
-=======
         #predicted_frames = np.zeros(video_size, dtype=self.precision)
         predicted_frames = train_video[0, :, :, :, :]
 
@@ -1193,18 +1191,14 @@ class DataManagement:
             start = timer()
             pred_frame = model.predict(train_video[:, i: i + self.frames, :, :, 0])
             #pred_frame = model.predict(train_video[:, i: i + self.frames])
->>>>>>> 1a47d3db0a5b4ddac47cd0c97a6f2bb70102312d
             end = timer()
             frames_predicted = pred_frame.shape[1]
             if frames_predicted > 1:
                 # Not LSTM, multiple output
                 pred_frame = pred_frame[:, int(frames_predicted / 2)]
-<<<<<<< HEAD
             #predicted_frames[i] = pred_frame
             predicted_frames[i, :, :, 0] = pred_frame[i, :, :, 0]
-=======
             predicted_frames = pred_frame
->>>>>>> 1a47d3db0a5b4ddac47cd0c97a6f2bb70102312d
             total_time += (end - start) * 1000
 
         # Use np.delete() if memory issues
