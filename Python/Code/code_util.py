@@ -1190,7 +1190,7 @@ class DataManagement:
                 # Not LSTM, multiple output
                 pred_frame = pred_frame[:, int(frames_predicted / 2)]
             #predicted_frames[i] = pred_frame
-            predicted_frames[i, :, :, 0] = pred_frame[i, :, :, 0]
+            predicted_frames[i, :, :, 0] = pred_frame[:, :, 0]
             predicted_frames = pred_frame
             total_time += (end - start) * 1000
 
