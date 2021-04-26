@@ -23,6 +23,7 @@ def main(
     params = dict()
     #loaded_model = data_class.loaded_model(model_class)
     loaded_model = True
+    continue_training = False
     if loaded_model:
         model = model_class
         data_class.precision = model.input.dtype.name
