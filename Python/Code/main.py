@@ -21,11 +21,7 @@ def main(
 ):
     history = dict()
     params = dict()
-    print("Model: " + args.model)
-    #loaded_model = data_class.loaded_model(model_class)
-    loaded_model = True
-    print(loaded_model)
-    print(continue_training)
+    loaded_model = data_class.loaded_model(model_class)
     if loaded_model:
         model = model_class
         data_class.precision = model.input.dtype.name
@@ -54,22 +50,14 @@ def main(
         else:
             chosen_model = model_class(input_dims, **kwargs)
             model = chosen_model.build()
-            #model.load_weights("/content/drive/My Drive/Fifth Year/MAI/Databases/Out/GP_3D_1/sub_640p/LowQual/01_optimiser=Adam_epochs=13_batch_size=1_lr=0.0005/Model/GP_3D_1_weights.h5")
-            #model.load_weights("/content/drive/My Drive/Fifth Year/MAI/Databases/Out/GP_3D/sub_640p/LowQual/Y_optimiser=Adam_epochs=17_batch_size=4_lr=0.0005/Model/GP_3D_weights.h5")
 
         kwargs.pop("c_space")
-        # Setting learning rate from average of last model
-        # history.get("lr", [0.0005])[-1] to get last learning rate
-        # params.get("lr", 0.0005) to get average learning rate
         adam = optimizers.Adam(
             learning_rate=history.get("lr", [5e-4])[-1],
             beta_1=0.9,
             beta_2=0.999,
             amsgrad=False,
-        )  # Best so far
-        # nadam = optimizers.nadam(learning_rate=0.002, beta_1=0.9, beta_2=0.999)
-        # rms_prop = optimizers.rmsprop(learning_rate=0.001, rho=0.9)
-        # sgd = optimizers.sgd(learning_rate=0.001, momentum=0.0, nesterov=False)
+        )
 
         if data_class.sequences:
             if loaded_model and change_lf:
