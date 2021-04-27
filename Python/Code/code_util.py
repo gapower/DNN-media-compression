@@ -489,7 +489,7 @@ class DataManagement:
 
             # Read in each input, perform pre-processing and get labels (original images)
             for input_img in batch_paths:
-                augment = self.get_augemntations()
+                augment = self.get_augmentations()
                 input = self.preprocess_image(
                     input_img, mode=augment, **self.input_dims
                 )
@@ -755,6 +755,7 @@ class DataManagement:
                 ret, frame_pr = cap.read()
                 cap.set(1, i - 1)
                 ret_cr, frame = cap.read()
+                # TODO make this specifiable via a command line argument
                 # COMMENT OUT THIS LINE TO REMOVE MOTION COMPENSATION
                 # frame = self.motion_compensation(frame_pr, frame)
 
@@ -964,7 +965,7 @@ class DataManagement:
         return img
 
     @staticmethod
-    def get_augemntations() -> dict:
+    def get_augmentations() -> dict:
         """
         Using a random number generator, the augmentation(s) to be used are returned as a dictionary
         :return: Dictionary containing augmentations to apply
@@ -1078,7 +1079,7 @@ class DataManagement:
 
                 # print("Video: " + str(input_video))
 
-                augment = self.get_augemntations()
+                augment = self.get_augmentations()
                 # Load video
                 cap = self.load_video(input_video)
                 # Randomly gather self.frames consecutive frames
