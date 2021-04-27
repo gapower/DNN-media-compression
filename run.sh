@@ -1,5 +1,6 @@
 #!/bin/bash
 # Sample script for running 5E1 project
+# Directories will need to be updated to work in over environments
 
 home_dir=$(/content/drive/'My Drive'/'Fifth Year'/MAI)
 
