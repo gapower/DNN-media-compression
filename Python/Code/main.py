@@ -21,6 +21,7 @@ def main(
 ):
     history = dict()
     params = dict()
+    # Attempt to load in Model - ensure that you provide the directory of the "saved_model.pb" that you wish to load
     loaded_model = data_class.loaded_model(model_class)
     if loaded_model:
         model = model_class
@@ -43,10 +44,12 @@ def main(
             data_class.set_input_dims(input_shape[1:])
     if not loaded_model or continue_training:
         input_dims = data_class.get_input_dims()
+        # Continue training a loaded model
         if loaded_model:
             chosen_model = data_class.get_model_from_string(model.name)(
                 input_dims, **kwargs
             )
+        # Train a new model
         else:
             chosen_model = model_class(input_dims, **kwargs)
             model = chosen_model.build()
@@ -81,6 +84,7 @@ def main(
 
         model.summary(print_fn=print)
 
+        # Generate results - post-processed media
         history = chosen_model.train(model, util_class=data_class, **kwargs)
 
         history.params.update({"batch_size": kwargs.get("batch_size", "unknown")})
