@@ -88,7 +88,11 @@ class ModelClass:
         :return: History of trained model
         """
         verbosity = 1
+
+        # Use this to specify when training should auto-stop
+        # Useful when using environments such as Colab which disconnect you without warning after 12h-24h
         max_time_seconds = int(60 * 60 * 10)
+
         monitor_metric = "val_mse_vid"
         cb = list()
         cb_patience = min(int(run_epochs * 0.15), 20)
@@ -126,7 +130,6 @@ class ModelClass:
             epoch_steps = (len(test_files) * util_class.frames * 30) // batch_size
             val_steps = (len(val_files) * util_class.frames * 30) // batch_size
         else:
-            #epoch_steps = 144 // batch_size
             epoch_steps = 408 // batch_size
             val_steps = epoch_steps // batch_size
         history = model.fit(
@@ -143,7 +146,10 @@ class ModelClass:
             workers=1,
             use_multiprocessing=False,
             shuffle=True,
-            initial_epoch=17,
+            # NOTE In some versions of keras, you are required to update initial_epoch when continuing training
+            # This is a bug. Therefore, you may need to change this parameter to the last epoch trained if resuming
+            # training.
+            initial_epoch=0,
         )
 
         end = timer()
@@ -208,7 +214,308 @@ class ModelClass:
 
 
 """
-IMAGE MODELS
+VIDEO MODELS - Implemented by G. Power
+"""
+
+# 3x3 kernels (MC-model in report)
+class GP_3D(ModelClass):
+    def __init__(self, dims, precision="float32", **kwargs):
+        super().__init__(
+            dims, precision, **kwargs
+        )  # Is equivalent to super(Attempt1, self).__init__(dims)
+        self.name = "GP_3D"
+
+    def build(self):
+        frames = self.input.shape[1]
+        print("Frames: " + str(frames))
+        mid_frame = int(frames / 2)
+        # print("Mid Frame: " + str(mid_frame))
+        width = self.input.shape[3]
+        print("Width: " + str(width))
+        height = self.input.shape[2]
+        print("Height: " + str(height))
+        channels = self.input.shape[4]
+        print("Channels: " + str(channels))
+
+        zpad1 = ZeroPadding3D(padding=(0, 2, 1))(self.input)
+        conv1_1 = Conv3D(filters=3, kernel_size=(2, 3, 3), activation="relu")(zpad1)
+        conv1_2 = Conv3D(filters=3, kernel_size=(2, 3, 3), activation="relu")(zpad1)
+        merge1 = concatenate([conv1_1, conv1_2], axis=1)
+
+        conv2_1 = Conv3D(filters=9, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge1)
+        conv2_2 = Conv3D(filters=9, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge1)
+        merge2 = concatenate([conv2_1, conv2_2], axis=1)
+
+        zpad2 = ZeroPadding3D(padding=(0, 1, 1))(merge2)
+        conv3_1 = Conv3D(filters=27, kernel_size=(2, 3, 3), activation="relu")(zpad2)
+        conv3_2 = Conv3D(filters=27, kernel_size=(2, 3, 3), activation="relu")(zpad2)
+        merge3 = concatenate([conv3_1, conv3_2], axis=1)
+
+        conv4_1 = Conv3D(filters=54, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge3)
+        conv4_2 = Conv3D(filters=54, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge3)
+        merge4 = concatenate([conv4_1, conv4_2], axis=1)
+
+        up1 = UpSampling3D(size=(1, 2, 2))(merge4)
+
+        skip1 = concatenate([up1, merge3], axis=4)
+
+        zpad3 = ZeroPadding3D(padding=(0, 1, 1))(skip1)
+        conv5_1 = Conv3D(filters=27, kernel_size=(2, 3, 3), activation="relu")(zpad3)
+        conv5_2 = Conv3D(filters=27, kernel_size=(2, 3, 3), activation="relu")(zpad3)
+        merge5 = concatenate([conv5_1, conv5_2], axis=1)
+
+        up2 = UpSampling3D(size=(1, 2, 2))(merge5)
+
+        skip2 = concatenate([up2, merge1], axis=4)
+
+        zpad4 = ZeroPadding3D(padding=(0, 0, 1))(skip2)
+        conv6_1 = Conv3D(filters=9, kernel_size=(2, 3, 3), activation="relu")(zpad4)
+        conv6_2 = Conv3D(filters=9, kernel_size=(2, 3, 3), activation="relu")(zpad4)
+        merge6 = concatenate([conv6_1, conv6_2], axis=1)
+
+        zpad5 = ZeroPadding3D(padding=(0, 1, 1))(merge6)
+        conv7_1 = Conv3D(filters=3, kernel_size=(2, 3, 3), activation="relu")(zpad5)
+        conv7_2 = Conv3D(filters=3, kernel_size=(2, 3, 3), activation="relu")(zpad5)
+        merge7 = concatenate([conv7_1, conv7_2], axis=1)
+
+        decode = self.crop(1, mid_frame, mid_frame + 1)(merge7)
+
+        model = Model(self.input, decode)
+
+        model._name = self.name
+
+        model.c_space = self.c_space
+
+        return model
+
+
+# 7x7 kernels (non-MC model in report)
+class GP_3D_1(ModelClass):
+    def __init__(self, dims, precision="float32", **kwargs):
+        super().__init__(
+            dims, precision, **kwargs
+        )  # Is equivalent to super(Attempt1, self).__init__(dims)
+        self.name = "GP_3D_1"
+
+    def build(self):
+        frames = self.input.shape[1]
+        print("Frames: " + str(frames))
+        mid_frame = int(frames / 2)
+        print("Mid Frame: " + str(mid_frame))
+        width = self.input.shape[3]
+        print("Width: " + str(width))
+        height = self.input.shape[2]
+        print("Height: " + str(height))
+        channels = self.input.shape[4]
+        print("Channels: " + str(channels))
+
+        zpad1 = ZeroPadding3D(padding=(0, 2, 3))(self.input)
+        conv1_1 = Conv3D(filters=3, kernel_size=(2, 7, 7), activation="relu")(zpad1)
+        conv1_2 = Conv3D(filters=3, kernel_size=(2, 7, 7), activation="relu")(zpad1)
+        merge1 = concatenate([conv1_1, conv1_2], axis=1)
+
+        conv2_1 = Conv3D(filters=9, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge1)
+        conv2_2 = Conv3D(filters=9, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge1)
+        merge2 = concatenate([conv2_1, conv2_2], axis=1)
+
+        zpad2 = ZeroPadding3D(padding=(0, 1, 1))(merge2)
+        conv3_1 = Conv3D(filters=27, kernel_size=(2, 7, 7), activation="relu")(zpad2)
+        conv3_2 = Conv3D(filters=27, kernel_size=(2, 7, 7), activation="relu")(zpad2)
+        merge3 = concatenate([conv3_1, conv3_2], axis=1)
+
+        conv4_1 = Conv3D(filters=54, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge3)
+        conv4_2 = Conv3D(filters=54, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge3)
+        merge4 = concatenate([conv4_1, conv4_2], axis=1)
+
+        up1 = UpSampling3D(size=(1, 2, 2))(merge4)
+
+        skip1 = concatenate([up1, merge3], axis=4)
+
+        zpad3 = ZeroPadding3D(padding=(0, 5, 5))(skip1)
+        conv5_1 = Conv3D(filters=27, kernel_size=(2, 7, 7), activation="relu")(zpad3)
+        conv5_2 = Conv3D(filters=27, kernel_size=(2, 7, 7), activation="relu")(zpad3)
+        merge5 = concatenate([conv5_1, conv5_2], axis=1)
+
+        up2 = UpSampling3D(size=(1, 2, 2))(merge5)
+
+        skip2 = concatenate([up2, merge1], axis=4)
+
+        zpad4 = ZeroPadding3D(padding=(0, 6, 5))(skip2)
+        conv6_1 = Conv3D(filters=9, kernel_size=(2, 7, 7), activation="relu")(zpad4)
+        conv6_2 = Conv3D(filters=9, kernel_size=(2, 7, 7), activation="relu")(zpad4)
+        merge6 = concatenate([conv6_1, conv6_2], axis=1)
+
+        zpad5 = ZeroPadding3D(padding=(0, 1, 1))(merge6)
+        conv7_1 = Conv3D(filters=3, kernel_size=(2, 7, 7), activation="relu")(zpad5)
+        conv7_2 = Conv3D(filters=3, kernel_size=(2, 7, 7), activation="relu")(zpad5)
+        merge7 = concatenate([conv7_1, conv7_2], axis=1)
+
+        decode = self.crop(1, mid_frame, mid_frame + 1)(merge7)
+
+        model = Model(self.input, decode)
+
+        model._name = self.name
+
+        model.c_space = self.c_space
+
+        return model
+
+
+# 5x5 kernels (not in report due to poor performance)
+class GP_3D_2(ModelClass):
+    def __init__(self, dims, precision="float32", **kwargs):
+        super().__init__(
+            dims, precision, **kwargs
+        )  # Is equivalent to super(Attempt1, self).__init__(dims)
+        self.name = "GP_3D_2"
+
+    def build(self):
+        frames = self.input.shape[1]
+        print("Frames: " + str(frames))
+        mid_frame = int(frames / 2)
+        print("Mid Frame: " + str(mid_frame))
+        width = self.input.shape[3]
+        print("Width: " + str(width))
+        height = self.input.shape[2]
+        print("Height: " + str(height))
+        channels = self.input.shape[4]
+        print("Channels: " + str(channels))
+
+        zpad1 = ZeroPadding3D(padding=(0, 1, 2))(self.input)
+        conv1_1 = Conv3D(filters=3, kernel_size=(2, 5, 5), activation="relu")(zpad1)
+        conv1_2 = Conv3D(filters=3, kernel_size=(2, 5, 5), activation="relu")(zpad1)
+        merge1 = concatenate([conv1_1, conv1_2], axis=1)
+
+        conv2_1 = Conv3D(filters=9, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge1)
+        conv2_2 = Conv3D(filters=9, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge1)
+        merge2 = concatenate([conv2_1, conv2_2], axis=1)
+
+        zpad2 = ZeroPadding3D(padding=(0, 0, 0))(merge2)
+        conv3_1 = Conv3D(filters=27, kernel_size=(2, 5, 5), activation="relu")(zpad2)
+        conv3_2 = Conv3D(filters=27, kernel_size=(2, 5, 5), activation="relu")(zpad2)
+        merge3 = concatenate([conv3_1, conv3_2], axis=1)
+
+        conv4_1 = Conv3D(filters=81, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge3)
+        conv4_2 = Conv3D(filters=81, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge3)
+        merge4 = concatenate([conv4_1, conv4_2], axis=1)
+
+        up1 = UpSampling3D(size=(1, 2, 2))(merge4)
+
+        skip1 = concatenate([up1, merge3], axis=4)
+
+        zpad3 = ZeroPadding3D(padding=(0, 4, 4))(skip1)
+        conv5_1 = Conv3D(filters=27, kernel_size=(2, 5, 5), activation="relu")(zpad3)
+        conv5_2 = Conv3D(filters=27, kernel_size=(2, 5, 5), activation="relu")(zpad3)
+        merge5 = concatenate([conv5_1, conv5_2], axis=1)
+
+        up2 = UpSampling3D(size=(1, 2, 2))(merge5)
+
+        skip2 = concatenate([up2, merge1], axis=4)
+
+        zpad4 = ZeroPadding3D(padding=(0, 5, 4))(skip2)
+        conv6_1 = Conv3D(filters=9, kernel_size=(2, 5, 5), activation="relu")(zpad4)
+        conv6_2 = Conv3D(filters=9, kernel_size=(2, 5, 5), activation="relu")(zpad4)
+        merge6 = concatenate([conv6_1, conv6_2], axis=1)
+
+        zpad5 = ZeroPadding3D(padding=(0, 0, 0))(merge6)
+        conv7_1 = Conv3D(filters=3, kernel_size=(2, 5, 5), activation="relu")(zpad5)
+        conv7_2 = Conv3D(filters=3, kernel_size=(2, 5, 5), activation="relu")(zpad5)
+        merge7 = concatenate([conv7_1, conv7_2], axis=1)
+
+        decode = self.crop(1, mid_frame, mid_frame + 1)(merge7)
+
+        model = Model(self.input, decode)
+
+        model._name = self.name
+
+        model.c_space = self.c_space
+
+        return model
+
+
+# 7x7 + less downsampling (not in report due to poor performance)
+class GP_3D_3(ModelClass):
+    def __init__(self, dims, precision="float32", **kwargs):
+        super().__init__(
+            dims, precision, **kwargs
+        )  # Is equivalent to super(Attempt1, self).__init__(dims)
+        self.name = "GP_3D_3"
+
+    def build(self):
+        frames = self.input.shape[1]
+        print("Frames: " + str(frames))
+        mid_frame = int(frames / 2)
+        print("Mid Frame: " + str(mid_frame))
+        width = self.input.shape[3]
+        print("Width: " + str(width))
+        height = self.input.shape[2]
+        print("Height: " + str(height))
+        channels = self.input.shape[4]
+        print("Channels: " + str(channels))
+
+        zpad1 = ZeroPadding3D(padding=(0, 3, 3))(self.input)
+        conv1_1 = Conv3D(filters=3, kernel_size=(2, 7, 7), activation="relu")(zpad1)
+        conv1_2 = Conv3D(filters=3, kernel_size=(2, 7, 7), activation="relu")(zpad1)
+        merge1 = concatenate([conv1_1, conv1_2], axis=1)
+
+        zpad2 = ZeroPadding3D(padding=(0, 2, 3))(merge1)
+        conv2_1 = Conv3D(filters=6, kernel_size=(2, 7, 7), activation="relu")(zpad2)
+        conv2_2 = Conv3D(filters=6, kernel_size=(2, 7, 7), activation="relu")(zpad2)
+        merge2 = concatenate([conv2_1, conv2_2], axis=1)
+
+        conv3_1 = Conv3D(filters=9, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge2)
+        conv3_2 = Conv3D(filters=9, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge2)
+        merge3 = concatenate([conv3_1, conv3_2], axis=1)
+
+        zpad2x = ZeroPadding3D(padding=(0, 1, 1))(merge3)
+        conv3_1x = Conv3D(filters=18, kernel_size=(2, 7, 7), activation="relu")(zpad2x)
+        conv3_2x = Conv3D(filters=18, kernel_size=(2, 7, 7), activation="relu")(zpad2x)
+        merge3x = concatenate([conv3_1x, conv3_2x], axis=1)
+
+        zpad3x = ZeroPadding3D(padding=(0, 3, 3))(merge3x)
+        conv4_1x = Conv3D(filters=27, kernel_size=(2, 7, 7), activation="relu")(zpad3x)
+        conv4_2x = Conv3D(filters=27, kernel_size=(2, 7, 7), activation="relu")(zpad3x)
+        merge4x = concatenate([conv4_1x, conv4_2x], axis=1)
+
+        zpad4x = ZeroPadding3D(padding=(0, 3, 3))(merge4x)
+        conv4_1 = Conv3D(filters=81, kernel_size=(2, 7, 7), activation="relu")(zpad4x)
+        conv4_2 = Conv3D(filters=81, kernel_size=(2, 7, 7), activation="relu")(zpad4x)
+        merge4 = concatenate([conv4_1, conv4_2], axis=1)
+
+        skip1 = concatenate([merge4, merge3x], axis=4)
+
+        zpad3 = ZeroPadding3D(padding=(0, 5, 5))(skip1)
+        conv5_1 = Conv3D(filters=27, kernel_size=(2, 7, 7), activation="relu")(zpad3)
+        conv5_2 = Conv3D(filters=27, kernel_size=(2, 7, 7), activation="relu")(zpad3)
+        merge5 = concatenate([conv5_1, conv5_2], axis=1)
+
+        up2 = UpSampling3D(size=(1, 2, 2))(merge5)
+
+        skip2 = concatenate([up2, merge2], axis=4)
+
+        zpad4 = ZeroPadding3D(padding=(0, 6, 5))(skip2)
+        conv6_1 = Conv3D(filters=9, kernel_size=(2, 7, 7), activation="relu")(zpad4)
+        conv6_2 = Conv3D(filters=9, kernel_size=(2, 7, 7), activation="relu")(zpad4)
+        merge6 = concatenate([conv6_1, conv6_2], axis=1)
+
+        zpad5 = ZeroPadding3D(padding=(0, 1, 1))(merge6)
+        conv7_1 = Conv3D(filters=3, kernel_size=(2, 7, 7), activation="relu")(zpad5)
+        conv7_2 = Conv3D(filters=3, kernel_size=(2, 7, 7), activation="relu")(zpad5)
+        merge7 = concatenate([conv7_1, conv7_2], axis=1)
+
+        decode = self.crop(1, mid_frame, mid_frame + 1)(merge7)
+
+        model = Model(self.input, decode)
+
+        model._name = self.name
+
+        model.c_space = self.c_space
+
+        return model
+
+
+"""
+IMAGE MODELS - Implemented by R. Trew
 """
 
 
@@ -962,301 +1269,8 @@ class UNet(ModelClass):
 
 
 """
-VIDEO MODELS
+VIDEO MODELS - Implemented by R. Trew
 """
-
-# 3x3
-class GP_3D(ModelClass):
-    def __init__(self, dims, precision="float32", **kwargs):
-        super().__init__(
-            dims, precision, **kwargs
-        )  # Is equivalent to super(Attempt1, self).__init__(dims)
-        self.name = "GP_3D"
-
-    def build(self):
-        frames = self.input.shape[1]
-        print("Frames: " + str(frames))
-        mid_frame = int(frames / 2)
-        # print("Mid Frame: " + str(mid_frame))
-        width = self.input.shape[3]
-        print("Width: " + str(width))
-        height = self.input.shape[2]
-        print("Height: " + str(height))
-        channels = self.input.shape[4]
-        print("Channels: " + str(channels))
-
-        zpad1 = ZeroPadding3D(padding=(0, 2, 1))(self.input)
-        conv1_1 = Conv3D(filters=3, kernel_size=(2, 3, 3), activation="relu")(zpad1)
-        conv1_2 = Conv3D(filters=3, kernel_size=(2, 3, 3), activation="relu")(zpad1)
-        merge1 = concatenate([conv1_1, conv1_2], axis=1)
-
-        conv2_1 = Conv3D(filters=9, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge1)
-        conv2_2 = Conv3D(filters=9, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge1)
-        merge2 = concatenate([conv2_1, conv2_2], axis=1)
-
-        zpad2 = ZeroPadding3D(padding=(0, 1, 1))(merge2)
-        conv3_1 = Conv3D(filters=27, kernel_size=(2, 3, 3), activation="relu")(zpad2)
-        conv3_2 = Conv3D(filters=27, kernel_size=(2, 3, 3), activation="relu")(zpad2)
-        merge3 = concatenate([conv3_1, conv3_2], axis=1)
-
-        conv4_1 = Conv3D(filters=54, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge3)
-        conv4_2 = Conv3D(filters=54, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge3)
-        merge4 = concatenate([conv4_1, conv4_2], axis=1)
-
-        up1 = UpSampling3D(size=(1, 2, 2))(merge4)
-
-        skip1 = concatenate([up1, merge3], axis=4)
-
-        zpad3 = ZeroPadding3D(padding=(0, 1, 1))(skip1)
-        conv5_1 = Conv3D(filters=27, kernel_size=(2, 3, 3), activation="relu")(zpad3)
-        conv5_2 = Conv3D(filters=27, kernel_size=(2, 3, 3), activation="relu")(zpad3)
-        merge5 = concatenate([conv5_1, conv5_2], axis=1)
-
-        up2 = UpSampling3D(size=(1, 2, 2))(merge5)
-
-        skip2 = concatenate([up2, merge1], axis=4)
-
-        zpad4 = ZeroPadding3D(padding=(0, 0, 1))(skip2)
-        conv6_1 = Conv3D(filters=9, kernel_size=(2, 3, 3), activation="relu")(zpad4)
-        conv6_2 = Conv3D(filters=9, kernel_size=(2, 3, 3), activation="relu")(zpad4)
-        merge6 = concatenate([conv6_1, conv6_2], axis=1)
-
-        zpad5 = ZeroPadding3D(padding=(0, 1, 1))(merge6)
-        conv7_1 = Conv3D(filters=3, kernel_size=(2, 3, 3), activation="relu")(zpad5)
-        conv7_2 = Conv3D(filters=3, kernel_size=(2, 3, 3), activation="relu")(zpad5)
-        merge7 = concatenate([conv7_1, conv7_2], axis=1)
-
-        decode = self.crop(1, mid_frame, mid_frame + 1)(merge7)
-
-        model = Model(self.input, decode)
-
-        model._name = self.name
-
-        model.c_space = self.c_space
-
-        return model
-
-# 7x7
-class GP_3D_1(ModelClass):
-    def __init__(self, dims, precision="float32", **kwargs):
-        super().__init__(
-            dims, precision, **kwargs
-        )  # Is equivalent to super(Attempt1, self).__init__(dims)
-        self.name = "GP_3D_1"
-
-    def build(self):
-        frames = self.input.shape[1]
-        print("Frames: " + str(frames))
-        mid_frame = int(frames / 2)
-        print("Mid Frame: " + str(mid_frame))
-        width = self.input.shape[3]
-        print("Width: " + str(width))
-        height = self.input.shape[2]
-        print("Height: " + str(height))
-        channels = self.input.shape[4]
-        print("Channels: " + str(channels))
-
-        zpad1 = ZeroPadding3D(padding=(0, 2, 3))(self.input)
-        conv1_1 = Conv3D(filters=3, kernel_size=(2, 7, 7), activation="relu")(zpad1)
-        conv1_2 = Conv3D(filters=3, kernel_size=(2, 7, 7), activation="relu")(zpad1)
-        merge1 = concatenate([conv1_1, conv1_2], axis=1)
-
-        conv2_1 = Conv3D(filters=9, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge1)
-        conv2_2 = Conv3D(filters=9, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge1)
-        merge2 = concatenate([conv2_1, conv2_2], axis=1)
-
-        zpad2 = ZeroPadding3D(padding=(0, 1, 1))(merge2)
-        conv3_1 = Conv3D(filters=27, kernel_size=(2, 7, 7), activation="relu")(zpad2)
-        conv3_2 = Conv3D(filters=27, kernel_size=(2, 7, 7), activation="relu")(zpad2)
-        merge3 = concatenate([conv3_1, conv3_2], axis=1)
-
-        conv4_1 = Conv3D(filters=54, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge3)
-        conv4_2 = Conv3D(filters=54, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge3)
-        merge4 = concatenate([conv4_1, conv4_2], axis=1)
-
-        up1 = UpSampling3D(size=(1, 2, 2))(merge4)
-
-        skip1 = concatenate([up1, merge3], axis=4)
-
-        zpad3 = ZeroPadding3D(padding=(0, 5, 5))(skip1)
-        conv5_1 = Conv3D(filters=27, kernel_size=(2, 7, 7), activation="relu")(zpad3)
-        conv5_2 = Conv3D(filters=27, kernel_size=(2, 7, 7), activation="relu")(zpad3)
-        merge5 = concatenate([conv5_1, conv5_2], axis=1)
-
-        up2 = UpSampling3D(size=(1, 2, 2))(merge5)
-
-        skip2 = concatenate([up2, merge1], axis=4)
-
-        zpad4 = ZeroPadding3D(padding=(0, 6, 5))(skip2)
-        conv6_1 = Conv3D(filters=9, kernel_size=(2, 7, 7), activation="relu")(zpad4)
-        conv6_2 = Conv3D(filters=9, kernel_size=(2, 7, 7), activation="relu")(zpad4)
-        merge6 = concatenate([conv6_1, conv6_2], axis=1)
-
-        zpad5 = ZeroPadding3D(padding=(0, 1, 1))(merge6)
-        conv7_1 = Conv3D(filters=3, kernel_size=(2, 7, 7), activation="relu")(zpad5)
-        conv7_2 = Conv3D(filters=3, kernel_size=(2, 7, 7), activation="relu")(zpad5)
-        merge7 = concatenate([conv7_1, conv7_2], axis=1)
-
-        decode = self.crop(1, mid_frame, mid_frame + 1)(merge7)
-
-        model = Model(self.input, decode)
-
-        model._name = self.name
-
-        model.c_space = self.c_space
-
-        return model
-
-# 5x5
-class GP_3D_2(ModelClass):
-    def __init__(self, dims, precision="float32", **kwargs):
-        super().__init__(
-            dims, precision, **kwargs
-        )  # Is equivalent to super(Attempt1, self).__init__(dims)
-        self.name = "GP_3D_2"
-
-    def build(self):
-        frames = self.input.shape[1]
-        print("Frames: " + str(frames))
-        mid_frame = int(frames / 2)
-        print("Mid Frame: " + str(mid_frame))
-        width = self.input.shape[3]
-        print("Width: " + str(width))
-        height = self.input.shape[2]
-        print("Height: " + str(height))
-        channels = self.input.shape[4]
-        print("Channels: " + str(channels))
-
-        zpad1 = ZeroPadding3D(padding=(0, 1, 2))(self.input)
-        conv1_1 = Conv3D(filters=3, kernel_size=(2, 5, 5), activation="relu")(zpad1)
-        conv1_2 = Conv3D(filters=3, kernel_size=(2, 5, 5), activation="relu")(zpad1)
-        merge1 = concatenate([conv1_1, conv1_2], axis=1)
-
-        conv2_1 = Conv3D(filters=9, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge1)
-        conv2_2 = Conv3D(filters=9, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge1)
-        merge2 = concatenate([conv2_1, conv2_2], axis=1)
-
-        zpad2 = ZeroPadding3D(padding=(0, 0, 0))(merge2)
-        conv3_1 = Conv3D(filters=27, kernel_size=(2, 5, 5), activation="relu")(zpad2)
-        conv3_2 = Conv3D(filters=27, kernel_size=(2, 5, 5), activation="relu")(zpad2)
-        merge3 = concatenate([conv3_1, conv3_2], axis=1)
-
-        conv4_1 = Conv3D(filters=81, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge3)
-        conv4_2 = Conv3D(filters=81, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge3)
-        merge4 = concatenate([conv4_1, conv4_2], axis=1)
-
-        up1 = UpSampling3D(size=(1, 2, 2))(merge4)
-
-        skip1 = concatenate([up1, merge3], axis=4)
-
-        zpad3 = ZeroPadding3D(padding=(0, 4, 4))(skip1)
-        conv5_1 = Conv3D(filters=27, kernel_size=(2, 5, 5), activation="relu")(zpad3)
-        conv5_2 = Conv3D(filters=27, kernel_size=(2, 5, 5), activation="relu")(zpad3)
-        merge5 = concatenate([conv5_1, conv5_2], axis=1)
-
-        up2 = UpSampling3D(size=(1, 2, 2))(merge5)
-
-        skip2 = concatenate([up2, merge1], axis=4)
-
-        zpad4 = ZeroPadding3D(padding=(0, 5, 4))(skip2)
-        conv6_1 = Conv3D(filters=9, kernel_size=(2, 5, 5), activation="relu")(zpad4)
-        conv6_2 = Conv3D(filters=9, kernel_size=(2, 5, 5), activation="relu")(zpad4)
-        merge6 = concatenate([conv6_1, conv6_2], axis=1)
-
-        zpad5 = ZeroPadding3D(padding=(0, 0, 0))(merge6)
-        conv7_1 = Conv3D(filters=3, kernel_size=(2, 5, 5), activation="relu")(zpad5)
-        conv7_2 = Conv3D(filters=3, kernel_size=(2, 5, 5), activation="relu")(zpad5)
-        merge7 = concatenate([conv7_1, conv7_2], axis=1)
-
-        decode = self.crop(1, mid_frame, mid_frame + 1)(merge7)
-
-        model = Model(self.input, decode)
-
-        model._name = self.name
-
-        model.c_space = self.c_space
-
-        return model
-
-# 7x7 + less downsampling
-class GP_3D_3(ModelClass):
-    def __init__(self, dims, precision="float32", **kwargs):
-        super().__init__(
-            dims, precision, **kwargs
-        )  # Is equivalent to super(Attempt1, self).__init__(dims)
-        self.name = "GP_3D_3"
-
-    def build(self):
-        frames = self.input.shape[1]
-        print("Frames: " + str(frames))
-        mid_frame = int(frames / 2)
-        print("Mid Frame: " + str(mid_frame))
-        width = self.input.shape[3]
-        print("Width: " + str(width))
-        height = self.input.shape[2]
-        print("Height: " + str(height))
-        channels = self.input.shape[4]
-        print("Channels: " + str(channels))
-
-        zpad1 = ZeroPadding3D(padding=(0, 3, 3))(self.input)
-        conv1_1 = Conv3D(filters=3, kernel_size=(2, 7, 7), activation="relu")(zpad1)
-        conv1_2 = Conv3D(filters=3, kernel_size=(2, 7, 7), activation="relu")(zpad1)
-        merge1 = concatenate([conv1_1, conv1_2], axis=1)
-
-        zpad2 = ZeroPadding3D(padding=(0, 2, 3))(merge1)
-        conv2_1 = Conv3D(filters=6, kernel_size=(2, 7, 7), activation="relu")(zpad2)
-        conv2_2 = Conv3D(filters=6, kernel_size=(2, 7, 7), activation="relu")(zpad2)
-        merge2 = concatenate([conv2_1, conv2_2], axis=1)
-
-        conv3_1 = Conv3D(filters=9, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge2)
-        conv3_2 = Conv3D(filters=9, kernel_size=(2, 2, 2), strides=(1, 2, 2), activation="relu")(merge2)
-        merge3 = concatenate([conv3_1, conv3_2], axis=1)
-
-        zpad2x = ZeroPadding3D(padding=(0, 1, 1))(merge3)
-        conv3_1x = Conv3D(filters=18, kernel_size=(2, 7, 7), activation="relu")(zpad2x)
-        conv3_2x = Conv3D(filters=18, kernel_size=(2, 7, 7), activation="relu")(zpad2x)
-        merge3x = concatenate([conv3_1x, conv3_2x], axis=1)
-
-        zpad3x = ZeroPadding3D(padding=(0, 3, 3))(merge3x)
-        conv4_1x = Conv3D(filters=27, kernel_size=(2, 7, 7), activation="relu")(zpad3x)
-        conv4_2x = Conv3D(filters=27, kernel_size=(2, 7, 7), activation="relu")(zpad3x)
-        merge4x = concatenate([conv4_1x, conv4_2x], axis=1)
-
-        zpad4x = ZeroPadding3D(padding=(0, 3, 3))(merge4x)
-        conv4_1 = Conv3D(filters=81, kernel_size=(2, 7, 7), activation="relu")(zpad4x)
-        conv4_2 = Conv3D(filters=81, kernel_size=(2, 7, 7), activation="relu")(zpad4x)
-        merge4 = concatenate([conv4_1, conv4_2], axis=1)
-
-        skip1 = concatenate([merge4, merge3x], axis=4)
-
-        zpad3 = ZeroPadding3D(padding=(0, 5, 5))(skip1)
-        conv5_1 = Conv3D(filters=27, kernel_size=(2, 7, 7), activation="relu")(zpad3)
-        conv5_2 = Conv3D(filters=27, kernel_size=(2, 7, 7), activation="relu")(zpad3)
-        merge5 = concatenate([conv5_1, conv5_2], axis=1)
-
-        up2 = UpSampling3D(size=(1, 2, 2))(merge5)
-
-        skip2 = concatenate([up2, merge2], axis=4)
-
-        zpad4 = ZeroPadding3D(padding=(0, 6, 5))(skip2)
-        conv6_1 = Conv3D(filters=9, kernel_size=(2, 7, 7), activation="relu")(zpad4)
-        conv6_2 = Conv3D(filters=9, kernel_size=(2, 7, 7), activation="relu")(zpad4)
-        merge6 = concatenate([conv6_1, conv6_2], axis=1)
-
-        zpad5 = ZeroPadding3D(padding=(0, 1, 1))(merge6)
-        conv7_1 = Conv3D(filters=3, kernel_size=(2, 7, 7), activation="relu")(zpad5)
-        conv7_2 = Conv3D(filters=3, kernel_size=(2, 7, 7), activation="relu")(zpad5)
-        merge7 = concatenate([conv7_1, conv7_2], axis=1)
-
-        decode = self.crop(1, mid_frame, mid_frame + 1)(merge7)
-
-        model = Model(self.input, decode)
-
-        model._name = self.name
-
-        model.c_space = self.c_space
-
-        return model
 
 class Attempt1_3D(ModelClass):
     def __init__(self, dims, precision="float32", **kwargs):
