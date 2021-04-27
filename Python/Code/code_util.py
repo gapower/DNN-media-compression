@@ -60,6 +60,383 @@ class DataManagement:
         self.fps = None
         self.c_space = c_space.upper()
 
+    """
+    General Functions
+    """
+
+    @staticmethod
+    def get_base_filename(full_name: str, file_regex: str) -> str:
+        """
+        Helper function to retrieve a base file name for matching training and label data
+        :param full_name: Path to training file
+        :param file_regex: Regex to remove from training file to get match
+        :return: base name from input path
+        """
+        re_exp = re.compile(file_regex)
+        base_file = os.path.basename(full_name)
+        base_filename = re.sub(re_exp, "", base_file)
+
+        return base_filename
+
+    @staticmethod
+    def unique_file(dest_path: str) -> str:
+        """
+        Iterative increase the number on a file name to generate a unique file name
+        :param dest_path: Original file name, which may already exist
+        :return: Unique file name with appended index, for uniqueness
+        """
+        index = ""
+        # Check if the folder name already exists
+        while os.path.exists(index + dest_path):
+            if index:
+                index = "{}_".format(str(int(index[0:-1]) + 1))
+            else:
+                index = "1_"
+
+        return index + dest_path
+
+    @staticmethod
+    def check_dims(image: np.ndarray, desired_dims: tuple) -> np.ndarray:
+        """
+        Check if the image dimensions are correct, raise error if not.
+        :param image: Tuple of dimensions for image being processed - (height, width, channels)
+        :param desired_dims: Tuple of desired image dimensions - (height, width, channels)
+        :return: Image with correct dimensions, or raise error
+        """
+
+        def check_ok(image_dims: tuple, wanted_dims: tuple) -> bool:
+            """
+            Check if the image dimensions are the same as the desired dimensions.
+            :param image_dims: Tuple of image dimensions - (height, width, channels)
+            :param wanted_dims: Tuple of desired image dimensions - (height, width, channels)
+            :return: True / False
+            """
+            return image_dims == wanted_dims
+
+        if not check_ok(image.shape, desired_dims):
+            if image.shape[0] != desired_dims[0]:
+                if image.shape[1] == desired_dims[0]:
+                    image = np.rot90(image)
+            if image.shape[2] != desired_dims[2] and desired_dims[2] is not 1:
+                image = image.reshape([image.shape[0], image.shape[1], desired_dims[2]])
+            if not check_ok(image.shape, desired_dims):
+                try:
+                    image = cv2.resize(
+                        image,
+                        # (width, height)
+                        (desired_dims[1], desired_dims[0]),
+                        interpolation=cv2.INTER_AREA,
+                    )
+                except ValueError:
+                    raise ValueError(
+                        "Image: {} doesn't match desired dimensions: {}".format(
+                            image.shape, desired_dims
+                        )
+                    )
+
+        return image
+
+    def get_input_dims(self) -> tuple:
+        """
+        Return the desired input dimensions for model, as recorded in the class instance
+        :return: Tuple of dimensions (height, width, channels)
+        """
+        # (height, width, channels)
+        if self.sequences:
+            # Add number of frames to resolution
+            # d = self.input_dims.get("dims", (256, 256, 3))
+            # d = self.input_dims.get("dims", (352, 288, 3))
+            d = self.input_dims.get("dims", (426, 240, 1))
+            d = (self.frames,) + d  # Place frames first
+        else:
+            d = self.input_dims.get("dims", (512, 768, 3))
+        return d
+
+    def set_input_dims(self, input_dims: tuple):
+        """
+        Helper method to set the input dims
+        :param input_dims: Tuple of dimensions for input to model
+        :return: Updates class with input dims
+        """
+        self.input_dims.update({"dims": input_dims})
+
+    def generator_function(self, validate: bool = True, split: float = 0.2) -> tuple:
+        """
+        Perform train/validation split, return appropriate function for training sample generation
+        :param validate: Boolean, create a validation set
+        :param split: Fraction of data to be used for validation
+        :return: Tuple of training data, validation data, function for batch generation
+        """
+        files = [
+            os.path.join(self.compressed_data_path, f)
+            for f in os.listdir(self.compressed_data_path)
+        ]
+
+        # print("\n\nFiles in Generator Function: " + str(files) + "\n\n")
+
+        if validate:
+            np.random.shuffle(files)
+            split_size = int(len(files) * split)
+            train_files = files[:-split_size]
+            validate_files = files[-split_size:]
+        else:
+            train_files = files
+            validate_files = None
+        if self.sequences:
+            function = self.video_generator
+        else:
+            function = self.image_generator
+        return train_files, validate_files, function
+
+    def output_results(self, model: models, **kwargs) -> timedelta:
+        """
+        Record metrics from model training, produce samples of model performance
+        :param model: instance of trained model
+        :param kwargs:
+        :return: average time per model output
+        """
+        if self.sequences:
+            return self.output_results_videos(model, **kwargs)
+        else:
+            return self.output_results_images(model, **kwargs)
+
+    def output_helper(self, model: models, training_data) -> str:
+        """
+        Utility function for creating required paths for data after training
+        Outputs graphs and saves metadata
+        :param model: trained model instance
+        :param training_data: history from model training
+        :return: path to place sample model output
+        """
+        f_name = ""
+        if not os.path.exists(self.out_path):
+            os.makedirs(self.out_path)
+        os.chdir(self.out_path)
+        if training_data:
+            # Create folder name based on params
+            f_name += "optimiser={}_epochs={}_batch_size={}_lr={}".format(
+                training_data.model.optimizer.iterations.name.split("/")[0],
+                # training_data.params["epochs"],
+                len(training_data.epoch),
+                training_data.params["batch_size"],
+                training_data.params["lr"],
+            )
+
+            if self.sequences:
+                ms_ssim = "tf_ms_ssim_vid"
+                mse = "mse_vid"
+                psnr = "tf_psnr_vid"
+            else:
+                ms_ssim = "tf_ms_ssim"
+                mse = "mse"
+                psnr = "tf_psnr"
+
+            # Create plots to save training records
+            fig_1 = plt.figure()
+            # print("MS-SSIM")
+            # print(training_data.history["tf_ms_ssim_vid"])
+            # print("PSNR")
+            # print(training_data.history["tf_psnr_vid"])
+            plt.plot(
+                np.asarray(training_data.history[f"{ms_ssim}"]) * -1.0,
+                label=f"MS-SSIM Training Loss",
+                color="blue",
+            )
+            plt.plot(
+                np.asarray(training_data.history[f"val_{ms_ssim}"]) * -1.0,
+                label=f"MS-SSIM Validation Loss",
+                color="orange",
+            )
+            plt.xlabel("Epochs")
+            plt.ylabel("MS-SSIM")
+            plt.legend()
+            plt.title(f_name)
+            # plt.show()
+
+            fig_2 = plt.figure()
+            plt.plot(
+                np.asarray(training_data.history[f"{psnr}"]) * -1.0,
+                label="PSNR Training Loss",
+                color="blue",
+            )
+            plt.plot(
+                np.asarray(training_data.history[f"val_{psnr}"]) * -1.0,
+                label="PSNR Validation Loss",
+                color="orange",
+            )
+            plt.xlabel("Epochs")
+            plt.ylabel("PSNR (dB)")
+            plt.legend()
+            plt.title(f_name)
+
+            fig_3 = plt.figure()
+            plt.plot(
+                np.asarray(training_data.history[f"{mse}"]),
+                label="MSE Training Loss",
+                color="blue",
+            )
+            plt.plot(
+                np.asarray(training_data.history[f"val_{mse}"]),
+                label="MSE Validation Loss",
+                color="orange",
+            )
+            plt.xlabel("Epochs")
+            plt.ylabel("Mean Squared Error")
+            plt.legend()
+            plt.title(f_name)
+
+            fig_4 = plt.figure()
+            plt.plot(
+                np.asarray(training_data.history["lr"]),
+                label="Learning Rate",
+                color="blue",
+            )
+            plt.xlabel("Epochs")
+            plt.ylabel("Learning Rate")
+            plt.legend()
+            plt.title(f_name)
+
+            out_path = os.path.join(self.out_path, self.unique_file(f_name))
+
+            # Save generated plots
+            p_dir = os.path.join(out_path, "Plots")
+            os.makedirs(p_dir)
+            os.chdir(p_dir)
+
+            fig_1.savefig("MS-SSIM.png")
+            fig_2.savefig("PSNR.png")
+            fig_3.savefig("MSE.png")
+            fig_4.savefig("lr.png")
+
+            with open("loss.txt", "a") as out_file:
+                out_file.write(f"compressed_path: {self.compressed_data_path}\n")
+                out_file.write(f"out_path: {self.out_path}\n")
+                out_file.write(f"Loss: ")
+                for i in training_data.history["loss"]:
+                    out_file.write(str(i))
+                    out_file.write("\n")
+
+            with open("mse.txt", "a") as out_file:
+                out_file.write(f"compressed_path: {self.compressed_data_path}\n")
+                out_file.write(f"out_path: {self.out_path}\n")
+                out_file.write(f"MSE: ")
+                for i in training_data.history["mse_vid"]:
+                    out_file.write(str(i))
+                    out_file.write("\n")
+                out_file.write("----VAL----\n")
+                for i in training_data.history["val_mse_vid"]:
+                    out_file.write(str(i))
+                    out_file.write("\n")
+
+            with open("psnr.txt", "a") as out_file:
+                out_file.write(f"compressed_path: {self.compressed_data_path}\n")
+                out_file.write(f"out_path: {self.out_path}\n")
+                out_file.write(f"PSNR: ")
+                for i in training_data.history["tf_psnr_vid"]:
+                    out_file.write(str(i))
+                    out_file.write("\n")
+                out_file.write("----VAL----\n")
+                for i in training_data.history["val_tf_psnr_vid"]:
+                    out_file.write(str(i))
+                    out_file.write("\n")
+
+            with open("msssim.txt", "a") as out_file:
+                out_file.write(f"compressed_path: {self.compressed_data_path}\n")
+                out_file.write(f"out_path: {self.out_path}\n")
+                out_file.write(f"MS-SSIM: ")
+                for i in training_data.history["tf_ms_ssim_vid"]:
+                    out_file.write(str(i))
+                    out_file.write("\n")
+                out_file.write("----VAL----\n")
+                for i in training_data.history["val_tf_ms_ssim_vid"]:
+                    out_file.write(str(i))
+                    out_file.write("\n")
+
+            # Save model
+            m_dir = os.path.join(out_path, "Model")
+
+            self.do_saving(model, training_data, m_dir)
+
+            t_dir = os.path.join(out_path, "Training")
+        else:
+            t_dir = os.path.join(self.out_path, self.unique_file(f_name))
+
+        return t_dir
+
+    @staticmethod
+    def get_model_from_string(classname: str):
+        """
+        Return constructor for a model from supplied model name
+        :param classname: Name of model for instantiation
+        :return: Constructor for specified model
+        """
+        print("Classname: " + str(classname))
+        return getattr(sys.modules[__name__].models, classname)
+
+    def load_pickled(self, pickle_file: str = "history") -> dict:
+        """
+        Load history of a model, saved in pickle format
+        :param pickle_file: Name of file to load
+        :return: unpickled data
+        """
+        pickle_path = os.path.join(self.out_path, "Model", f"{pickle_file}.pickle")
+        try:
+            with open(pickle_path, "rb") as p_file:
+                p_data = pickle.load(p_file)
+        except FileNotFoundError:
+            p_data = dict()
+        return p_data
+
+    def load_model_from_path(self, model_path: str):
+        """
+        Load a trained model from  a file
+        :param model_path: Path to saved model file
+        :return: Instance of saved model
+        """
+        self.out_path = os.sep.join(model_path.split(os.sep)[:-2])
+        model = load_model(model_path, compile=False)
+        return model
+
+    @staticmethod
+    def loaded_model(model: models) -> bool:
+        """
+        Check if input is an instance of a model
+        :param model: Supposed instance of models class to check
+        :return: True if model, else false
+        """
+        print(str(type(model)))
+        return type(model) == Model
+
+    def do_saving(self, model: models, history, model_path: str):
+        """
+        Save model and metadata post training
+        :param model: Trained model instance
+        :param history: History of model training
+        :param model_path: Path to save model and metadata at
+        :return:
+        """
+        os.makedirs(model_path)
+        os.chdir(model_path)
+
+        # Save the whole model
+        model.save(f"{model.name}.h5")  # For Keras (TF 1.0)
+        model.save(f"{model.name}.tf")  # TF 2.0
+
+        # Save weights only
+        model.save_weights(f"{model.name}_weights.h5")
+
+        # Save the history
+        with open("history.pickle", "wb") as hist:
+            pickle.dump(history.history, hist, protocol=pickle.HIGHEST_PROTOCOL)
+        # Save the training params
+        with open("params.pickle", "wb") as params:
+            history.params["colourspace"] = self.c_space
+            pickle.dump(history.params, params, protocol=pickle.HIGHEST_PROTOCOL)
+
+    """
+    Image-related functions
+    """
+
     def preprocess_image(
             self,
             image_path: str,
@@ -88,6 +465,256 @@ class DataManagement:
             plt.show()
 
         return img
+
+    def image_generator(
+            self, files: list, batch_size: int = 2, file_type: str = "png"
+    ) -> tuple:
+        """
+        Generate training samples for image based models
+        :param files: Files to use for mini-batch generating
+        :param batch_size: Number of samples in each mini-batch
+        :param file_type: Extension of files to load
+        :return: model inputs, labels
+        """
+        self.input_dims.update({"dims": self.get_input_dims()})
+        qualities = ["_75.jpg", "_85.jpg", "_90.jpg"]
+        # fmt: off
+        files = [k for k in files if not any(k[-len(j):] == j for j in qualities)]
+        # fmt: on
+        while True:
+            # Select files for the batch
+            batch_paths = np.random.choice(a=files, size=batch_size)
+            batch_input = list()
+            batch_output = list()
+
+            # Read in each input, perform pre-processing and get labels (original images)
+            for input_img in batch_paths:
+                augment = self.get_augemntations()
+                input = self.preprocess_image(
+                    input_img, mode=augment, **self.input_dims
+                )
+
+                file_name = os.path.basename(input_img).split("_")[0]
+                file_path = os.path.join(
+                    self.original_data_path, f"{file_name}.{file_type}"
+                )
+                if "rotate" in augment:
+                    augment = {"rotate": augment["rotate"]}
+                else:
+                    augment = None
+                output = self.preprocess_image(
+                    file_path, mode=augment, **self.input_dims
+                )
+
+                batch_input.append(input)
+                batch_output.append(output)
+
+            # Return a tuple of (input, output) to feed network
+            batch_x = np.asarray(batch_input, dtype=self.precision)
+            batch_y = np.asarray(batch_output, dtype=self.precision)
+
+            # return batch_x, batch_y
+            yield batch_x, batch_y
+
+    def deprocess_image(
+            self,
+            img: np.ndarray,
+            do_conversion: bool = False,
+            frame: bool = False,
+            plot: bool = False,
+    ) -> np.ndarray:
+        """
+        Convert the predicted image from the model back to [0..255] for viewing / saving.
+        :param img: Predicted image
+        :param do_conversion: Boolean - perform colourspace conversion, as required
+        :param frame: Specify if input is from a sequence
+        :param plot: Boolean - to plot image for viewing
+        :return: Restored image
+        """
+        if img.shape[-1] != 3:
+            raise ValueError("Not RGB")
+        if len(img.shape) > 3:
+            img = img.reshape((img.shape[-3], img.shape[-2], img.shape[-1]))
+
+        if do_conversion:
+            if frame:
+                if self.c_space == "YUV":
+                    img = cv2.cvtColor(img, cv2.COLOR_YUV2BGR)  # YUV -> BGR
+                elif self.c_space == "RGB":
+                    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)  # RGB -> BGR
+            else:
+                if self.c_space == "YUV":
+                    img = cv2.cvtColor(img, cv2.COLOR_YUV2RGB)  # YUV -> RGB
+                elif self.c_space == "BGR":
+                    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # BGR -> RGB
+            img = np.clip(img, 0.0, None)
+        try:
+            img *= 255.0
+        except RuntimeWarning:
+            pass
+        img = np.clip(img, 0, 255).astype("uint8")
+
+        if plot:
+            plt.figure()
+            plt.imshow(img)
+            plt.show()
+
+        return img
+
+    def output_results_images(
+            self,
+            model: models,
+            training_data=None,
+            loaded_model: bool = False,
+            continue_training: bool = False,
+            **kwargs,
+    ):
+        """
+        Produce statistics and samples from training image based model
+        :param model: trained model instance
+        :param training_data: history of model training
+        :param loaded_model: Boolean - specify if model is loaded or trained (new)
+        :param continue_training: Boolean - specify if loaded model has been re-trained
+        :param kwargs:
+        :return: average time for model to produce output
+        """
+        return_dir = os.getcwd()
+        if loaded_model:
+            if continue_training:
+                dir_name = "trained_model"
+            else:
+                dir_name = "loaded_model"
+            os.chdir(self.out_path)
+            self.out_path = os.path.join(self.out_path, self.unique_file(dir_name))
+            os.chdir(return_dir)
+        else:
+            training_dims = f"{model.input_shape[2]}x{model.input_shape[1]}"
+            self.out_path = os.path.join(self.out_path, model.name, training_dims)
+        t_dir = self.output_helper(model, training_data)
+
+        # Save sample training and validation images
+        output_time = 0.0
+        i = 0  # So that i will always be defined
+        re_exp = r"(_\d+\.jpg$)"
+        input_images = os.listdir(self.compressed_data_path)
+        num_images = 0
+        qualities = sorted(
+            set(
+                [
+                    # fmt: off
+                    j[1: len(j) - len(".jpg")]
+                    # fmt: on
+                    for j in list(set([re.findall(re_exp, i)[0] for i in input_images]))
+                ]
+            ),
+            reverse=True,
+        )
+        if training_data:
+            qualities = qualities[:3]  # get top 3
+        for quality in tqdm(qualities, position=0, leave=True):
+            match_string = f"_{quality}.jpg"
+            for i, image_file in enumerate(
+                    glob.glob(self.compressed_data_path + f"/*{match_string}"), start=1
+            ):
+                base_name = self.get_base_filename(image_file, re_exp)
+                original_image = os.path.join(
+                    self.original_data_path, f"{base_name}.png"
+                )
+                output_time += self.output_helper_images(
+                    t_dir,
+                    image_file,
+                    original_image,
+                    model,
+                    output_append=[f"{quality}", base_name],
+                )
+            num_images += i
+
+        try:
+            avg_time = timedelta(milliseconds=output_time / num_images)
+        except ZeroDivisionError:
+            avg_time = 0.0
+
+        os.chdir(t_dir)
+        with open("avg_time.txt", "a") as out_file:
+            out_file.write(f"compressed_path: {self.compressed_data_path}\n")
+            out_file.write(f"out_path: {self.out_path}\n")
+            out_file.write(f"Average time to predict: {avg_time}")
+
+        os.chdir(return_dir)
+
+        return avg_time
+
+    def output_helper_images(
+            self,
+            output_directory: str,
+            input_image: str,
+            original_image: str,
+            model: models,
+            output_append=None,
+            plot: bool = False,
+    ) -> float:
+        """
+        Utility function for creating model outputs, used when training or lading model for metrics
+        :param output_directory: path to put output
+        :param input_image: path of model input
+        :param original_image: path of corresponding label
+        :param model: trained model
+        :param output_append: items to append to output path
+        :param plot: Boolean - show outputs
+        :return: time (in seconds) to produce model output
+        """
+        if type(output_append) is list:
+            for appendage in output_append:
+                output_directory = os.path.join(output_directory, appendage)
+        elif output_append:
+            output_directory = os.path.join(output_directory, output_append)
+
+        os.makedirs(output_directory)
+        os.chdir(output_directory)
+
+        # Load training image
+        ndims = len(self.input_dims["dims"])
+        dims = {"dims": self.input_dims["dims"][-3:]}
+        if ndims == 4:
+            seq_len = self.input_dims["dims"][0]
+            input_image = self.preprocess_image(input_image, **dims)
+            train_image = np.expand_dims(
+                np.repeat(np.expand_dims(input_image, axis=0), seq_len, axis=0), axis=0
+            )
+        else:
+            input_image = self.preprocess_image(input_image, **dims)
+            train_image = np.expand_dims(input_image, axis=0)
+
+        start = timer()
+        pred_image = model.predict(train_image)
+        end = timer()
+
+        original_image = self.preprocess_image(
+            original_image, do_conversion=False, **dims
+        )
+        save_img("original.png", self.deprocess_image(original_image, plot=plot))
+
+        save_img(
+            "compressed.png",
+            self.deprocess_image(input_image, do_conversion=True, plot=plot),
+        )
+
+        if ndims == 4:
+            try:
+                pred_image = pred_image[:, int(seq_len / 2)]
+            except IndexError:
+                shape = pred_image.shape
+                pred_image = np.reshape(pred_image, shape[-3:])
+        save_img(
+            "trained.png",
+            self.deprocess_image(pred_image, do_conversion=True, plot=plot),
+        )
+
+        return (end - start) * 1000
+
+    """
+    Video-related functions
+    """
 
     def preprocess_video(
             self,
@@ -155,7 +782,7 @@ class DataManagement:
 
         return vid
 
-    def reprocess_video(
+    def preprocess_video_for_results(
             self,
             video_path,
             mode: dict = None,
@@ -213,12 +840,13 @@ class DataManagement:
 
         return vid
 
-    def motion_compensation(
-            self,
-            curr,
-            prev
-    ):
-
+    def motion_compensation(self, curr, prev):
+        """
+        Perform Motion compensation on previous frame using Farneback Optical Flow
+        param curr: current frame
+        param prev: previous frame
+        returns: a motion-compensation version of the previous frame
+        """
         curr_g = cv2.cvtColor(curr, cv2.COLOR_RGB2GRAY)
         prev_g = cv2.cvtColor(prev, cv2.COLOR_RGB2GRAY)
 
@@ -228,6 +856,7 @@ class DataManagement:
         for c in range(3):
             for y in range(len(curr[0])):
                 for x in range(len(curr)):
+                    # TODO Implement pixel interpolation using interp2d()
                     mc_x = x + int(flow[x, y, 0])
                     mc_y = y + int(flow[x, y, 1])
                     if mc_x >= len(curr):
@@ -427,194 +1056,6 @@ class DataManagement:
             self.fps = fps
         return metadata
 
-    @staticmethod
-    def check_dims(image: np.ndarray, desired_dims: tuple) -> np.ndarray:
-        """
-        Check if the image dimensions are correct, raise error if not.
-        :param image: Tuple of dimensions for image being processed - (height, width, channels)
-        :param desired_dims: Tuple of desired image dimensions - (height, width, channels)
-        :return: Image with correct dimensions, or raise error
-        """
-
-        def check_ok(image_dims: tuple, wanted_dims: tuple) -> bool:
-            """
-            Check if the image dimensions are the same as the desired dimensions.
-            :param image_dims: Tuple of image dimensions - (height, width, channels)
-            :param wanted_dims: Tuple of desired image dimensions - (height, width, channels)
-            :return: True / False
-            """
-            return image_dims == wanted_dims
-
-        if not check_ok(image.shape, desired_dims):
-            if image.shape[0] != desired_dims[0]:
-                if image.shape[1] == desired_dims[0]:
-                    image = np.rot90(image)
-            if image.shape[2] != desired_dims[2] and desired_dims[2] is not 1:
-                image = image.reshape([image.shape[0], image.shape[1], desired_dims[2]])
-            if not check_ok(image.shape, desired_dims):
-                try:
-                    image = cv2.resize(
-                        image,
-                        # (width, height)
-                        (desired_dims[1], desired_dims[0]),
-                        interpolation=cv2.INTER_AREA,
-                    )
-                except ValueError:
-                    raise ValueError(
-                        "Image: {} doesn't match desired dimensions: {}".format(
-                            image.shape, desired_dims
-                        )
-                    )
-
-        return image
-
-    def deprocess_image(
-            self,
-            img: np.ndarray,
-            do_conversion: bool = False,
-            frame: bool = False,
-            plot: bool = False,
-    ) -> np.ndarray:
-        """
-        Convert the predicted image from the model back to [0..255] for viewing / saving.
-        :param img: Predicted image
-        :param do_conversion: Boolean - perform colourspace conversion, as required
-        :param frame: Specify if input is from a sequence
-        :param plot: Boolean - to plot image for viewing
-        :return: Restored image
-        """
-        if img.shape[-1] != 3:
-            raise ValueError("Not RGB")
-        if len(img.shape) > 3:
-            img = img.reshape((img.shape[-3], img.shape[-2], img.shape[-1]))
-
-        if do_conversion:
-            if frame:
-                if self.c_space == "YUV":
-                    img = cv2.cvtColor(img, cv2.COLOR_YUV2BGR)  # YUV -> BGR
-                elif self.c_space == "RGB":
-                    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)  # RGB -> BGR
-            else:
-                if self.c_space == "YUV":
-                    img = cv2.cvtColor(img, cv2.COLOR_YUV2RGB)  # YUV -> RGB
-                elif self.c_space == "BGR":
-                    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # BGR -> RGB
-            img = np.clip(img, 0.0, None)
-        try:
-            img *= 255.0
-        except RuntimeWarning:
-            pass
-        img = np.clip(img, 0, 255).astype("uint8")
-
-        if plot:
-            plt.figure()
-            plt.imshow(img)
-            plt.show()
-
-        return img
-
-    def get_input_dims(self) -> tuple:
-        """
-        Return the desired input dimensions for model, as recorded in the class instance
-        :return: Tuple of dimensions (height, width, channels)
-        """
-        # (height, width, channels)
-        if self.sequences:
-            # Add number of frames to resolution
-            # d = self.input_dims.get("dims", (256, 256, 3))
-            # d = self.input_dims.get("dims", (352, 288, 3))
-            d = self.input_dims.get("dims", (426, 240, 1))
-            d = (self.frames,) + d  # Place frames first
-        else:
-            d = self.input_dims.get("dims", (512, 768, 3))
-        return d
-
-    def set_input_dims(self, input_dims: tuple):
-        """
-        Helper method to set the input dims
-        :param input_dims: Tuple of dimensions for input to model
-        :return: Updates class with input dims
-        """
-        self.input_dims.update({"dims": input_dims})
-
-    def generator_function(self, validate: bool = True, split: float = 0.2) -> tuple:
-        """
-        Perform train/validation split, return appropriate function for training sample generation
-        :param validate: Boolean, create a validation set
-        :param split: Fraction of data to be used for validation
-        :return: Tuple of training data, validation data, function for batch generation
-        """
-        files = [
-            os.path.join(self.compressed_data_path, f)
-            for f in os.listdir(self.compressed_data_path)
-        ]
-
-        # print("\n\nFiles in Generator Function: " + str(files) + "\n\n")
-
-        if validate:
-            np.random.shuffle(files)
-            split_size = int(len(files) * split)
-            train_files = files[:-split_size]
-            validate_files = files[-split_size:]
-        else:
-            train_files = files
-            validate_files = None
-        if self.sequences:
-            function = self.video_generator
-        else:
-            function = self.image_generator
-        return train_files, validate_files, function
-
-    def image_generator(
-            self, files: list, batch_size: int = 2, file_type: str = "png"
-    ) -> tuple:
-        """
-        Generate training samples for image based models
-        :param files: Files to use for mini-batch generating
-        :param batch_size: Number of samples in each mini-batch
-        :param file_type: Extension of files to load
-        :return: model inputs, labels
-        """
-        self.input_dims.update({"dims": self.get_input_dims()})
-        qualities = ["_75.jpg", "_85.jpg", "_90.jpg"]
-        # fmt: off
-        files = [k for k in files if not any(k[-len(j):] == j for j in qualities)]
-        # fmt: on
-        while True:
-            # Select files for the batch
-            batch_paths = np.random.choice(a=files, size=batch_size)
-            batch_input = list()
-            batch_output = list()
-
-            # Read in each input, perform pre-processing and get labels (original images)
-            for input_img in batch_paths:
-                augment = self.get_augemntations()
-                input = self.preprocess_image(
-                    input_img, mode=augment, **self.input_dims
-                )
-
-                file_name = os.path.basename(input_img).split("_")[0]
-                file_path = os.path.join(
-                    self.original_data_path, f"{file_name}.{file_type}"
-                )
-                if "rotate" in augment:
-                    augment = {"rotate": augment["rotate"]}
-                else:
-                    augment = None
-                output = self.preprocess_image(
-                    file_path, mode=augment, **self.input_dims
-                )
-
-                batch_input.append(input)
-                batch_output.append(output)
-
-            # Return a tuple of (input, output) to feed network
-            batch_x = np.asarray(batch_input, dtype=self.precision)
-            batch_y = np.asarray(batch_output, dtype=self.precision)
-
-            # return batch_x, batch_y
-            yield batch_x, batch_y
-
     def video_generator(self, files: list, batch_size: int = 2, file_type: str = "y4m"):
         """
         Generate training samples for image based models
@@ -680,363 +1121,6 @@ class DataManagement:
             # return batch_x, batch_y
             yield batch_x, batch_y
 
-    @staticmethod
-    def get_base_filename(full_name: str, file_regex: str) -> str:
-        """
-        Helper function to retrieve a base file name for matching training and label data
-        :param full_name: Path to training file
-        :param file_regex: Regex to remove from training file to get match
-        :return: base name from input path
-        """
-        re_exp = re.compile(file_regex)
-        base_file = os.path.basename(full_name)
-        base_filename = re.sub(re_exp, "", base_file)
-
-        return base_filename
-
-    @staticmethod
-    def unique_file(dest_path: str) -> str:
-        """
-        Iterative increase the number on a file name to generate a unique file name
-        :param dest_path: Original file name, which may already exist
-        :return: Unique file name with appended index, for uniqueness
-        """
-        index = ""
-        # Check if the folder name already exists
-        while os.path.exists(index + dest_path):
-            if index:
-                index = "{}_".format(str(int(index[0:-1]) + 1))
-            else:
-                index = "1_"
-
-        return index + dest_path
-
-    def output_results(self, model: models, **kwargs) -> timedelta:
-        """
-        Record metrics from model training, produce samples of model performance
-        :param model: instance of trained model
-        :param kwargs:
-        :return: average time per model output
-        """
-        if self.sequences:
-            return self.output_results_videos(model, **kwargs)
-        else:
-            return self.output_results_images(model, **kwargs)
-
-    def output_helper(self, model: models, training_data) -> str:
-        """
-        Utility function for creating required paths for data after training
-        Outputs graphs and saves metadata
-        :param model: trained model instance
-        :param training_data: history from model training
-        :return: path to place sample model output
-        """
-        f_name = ""
-        if not os.path.exists(self.out_path):
-            os.makedirs(self.out_path)
-        os.chdir(self.out_path)
-        if training_data:
-            # Create folder name based on params
-            f_name += "optimiser={}_epochs={}_batch_size={}_lr={}".format(
-                training_data.model.optimizer.iterations.name.split("/")[0],
-                # training_data.params["epochs"],
-                len(training_data.epoch),
-                training_data.params["batch_size"],
-                training_data.params["lr"],
-            )
-
-            if self.sequences:
-                ms_ssim = "tf_ms_ssim_vid"
-                mse = "mse_vid"
-                psnr = "tf_psnr_vid"
-            else:
-                ms_ssim = "tf_ms_ssim"
-                mse = "mse"
-                psnr = "tf_psnr"
-
-            # Create plots to save training records
-            fig_1 = plt.figure()
-            # print("MS-SSIM")
-            # print(training_data.history["tf_ms_ssim_vid"])
-            # print("PSNR")
-            # print(training_data.history["tf_psnr_vid"])
-            plt.plot(
-                np.asarray(training_data.history[f"{ms_ssim}"]) * -1.0,
-                label=f"MS-SSIM Training Loss",
-                color="blue",
-            )
-            plt.plot(
-                np.asarray(training_data.history[f"val_{ms_ssim}"]) * -1.0,
-                label=f"MS-SSIM Validation Loss",
-                color="orange",
-            )
-            plt.xlabel("Epochs")
-            plt.ylabel("MS-SSIM")
-            plt.legend()
-            plt.title(f_name)
-            # plt.show()
-
-            fig_2 = plt.figure()
-            plt.plot(
-                np.asarray(training_data.history[f"{psnr}"]) * -1.0,
-                label="PSNR Training Loss",
-                color="blue",
-            )
-            plt.plot(
-                np.asarray(training_data.history[f"val_{psnr}"]) * -1.0,
-                label="PSNR Validation Loss",
-                color="orange",
-            )
-            plt.xlabel("Epochs")
-            plt.ylabel("PSNR (dB)")
-            plt.legend()
-            plt.title(f_name)
-
-            fig_3 = plt.figure()
-            plt.plot(
-                np.asarray(training_data.history[f"{mse}"]),
-                label="MSE Training Loss",
-                color="blue",
-            )
-            plt.plot(
-                np.asarray(training_data.history[f"val_{mse}"]),
-                label="MSE Validation Loss",
-                color="orange",
-            )
-            plt.xlabel("Epochs")
-            plt.ylabel("Mean Squared Error")
-            plt.legend()
-            plt.title(f_name)
-
-            fig_4 = plt.figure()
-            plt.plot(
-                np.asarray(training_data.history["lr"]),
-                label="Learning Rate",
-                color="blue",
-            )
-            plt.xlabel("Epochs")
-            plt.ylabel("Learning Rate")
-            plt.legend()
-            plt.title(f_name)
-
-            out_path = os.path.join(self.out_path, self.unique_file(f_name))
-
-            # Save generated plots
-            p_dir = os.path.join(out_path, "Plots")
-            os.makedirs(p_dir)
-            os.chdir(p_dir)
-
-            fig_1.savefig("MS-SSIM.png")
-            fig_2.savefig("PSNR.png")
-            fig_3.savefig("MSE.png")
-            fig_4.savefig("lr.png")
-
-            with open("loss.txt", "a") as out_file:
-                out_file.write(f"compressed_path: {self.compressed_data_path}\n")
-                out_file.write(f"out_path: {self.out_path}\n")
-                out_file.write(f"Loss: ")
-                for i in training_data.history["loss"]:
-                    out_file.write(str(i))
-                    out_file.write("\n")
-
-            with open("mse.txt", "a") as out_file:
-                out_file.write(f"compressed_path: {self.compressed_data_path}\n")
-                out_file.write(f"out_path: {self.out_path}\n")
-                out_file.write(f"MSE: ")
-                for i in training_data.history["mse_vid"]:
-                    out_file.write(str(i))
-                    out_file.write("\n")
-                out_file.write("----VAL----\n")
-                for i in training_data.history["val_mse_vid"]:
-                    out_file.write(str(i))
-                    out_file.write("\n")
-
-            with open("psnr.txt", "a") as out_file:
-                out_file.write(f"compressed_path: {self.compressed_data_path}\n")
-                out_file.write(f"out_path: {self.out_path}\n")
-                out_file.write(f"PSNR: ")
-                for i in training_data.history["tf_psnr_vid"]:
-                    out_file.write(str(i))
-                    out_file.write("\n")
-                out_file.write("----VAL----\n")
-                for i in training_data.history["val_tf_psnr_vid"]:
-                    out_file.write(str(i))
-                    out_file.write("\n")
-
-            with open("msssim.txt", "a") as out_file:
-                out_file.write(f"compressed_path: {self.compressed_data_path}\n")
-                out_file.write(f"out_path: {self.out_path}\n")
-                out_file.write(f"MS-SSIM: ")
-                for i in training_data.history["tf_ms_ssim_vid"]:
-                    out_file.write(str(i))
-                    out_file.write("\n")
-                out_file.write("----VAL----\n")
-                for i in training_data.history["val_tf_ms_ssim_vid"]:
-                    out_file.write(str(i))
-                    out_file.write("\n")
-
-            # Save model
-            m_dir = os.path.join(out_path, "Model")
-
-            self.do_saving(model, training_data, m_dir)
-
-            t_dir = os.path.join(out_path, "Training")
-        else:
-            t_dir = os.path.join(self.out_path, self.unique_file(f_name))
-
-        return t_dir
-
-    def output_results_images(
-            self,
-            model: models,
-            training_data=None,
-            loaded_model: bool = False,
-            continue_training: bool = False,
-            **kwargs,
-    ):
-        """
-        Produce statistics and samples from training image based model
-        :param model: trained model instance
-        :param training_data: history of model training
-        :param loaded_model: Boolean - specify if model is loaded or trained (new)
-        :param continue_training: Boolean - specify if loaded model has been re-trained
-        :param kwargs:
-        :return: average time for model to produce output
-        """
-        return_dir = os.getcwd()
-        if loaded_model:
-            if continue_training:
-                dir_name = "trained_model"
-            else:
-                dir_name = "loaded_model"
-            os.chdir(self.out_path)
-            self.out_path = os.path.join(self.out_path, self.unique_file(dir_name))
-            os.chdir(return_dir)
-        else:
-            training_dims = f"{model.input_shape[2]}x{model.input_shape[1]}"
-            self.out_path = os.path.join(self.out_path, model.name, training_dims)
-        t_dir = self.output_helper(model, training_data)
-
-        # Save sample training and validation images
-        output_time = 0.0
-        i = 0  # So that i will always be defined
-        re_exp = r"(_\d+\.jpg$)"
-        input_images = os.listdir(self.compressed_data_path)
-        num_images = 0
-        qualities = sorted(
-            set(
-                [
-                    # fmt: off
-                    j[1: len(j) - len(".jpg")]
-                    # fmt: on
-                    for j in list(set([re.findall(re_exp, i)[0] for i in input_images]))
-                ]
-            ),
-            reverse=True,
-        )
-        if training_data:
-            qualities = qualities[:3]  # get top 3
-        for quality in tqdm(qualities, position=0, leave=True):
-            match_string = f"_{quality}.jpg"
-            for i, image_file in enumerate(
-                    glob.glob(self.compressed_data_path + f"/*{match_string}"), start=1
-            ):
-                base_name = self.get_base_filename(image_file, re_exp)
-                original_image = os.path.join(
-                    self.original_data_path, f"{base_name}.png"
-                )
-                output_time += self.output_helper_images(
-                    t_dir,
-                    image_file,
-                    original_image,
-                    model,
-                    output_append=[f"{quality}", base_name],
-                )
-            num_images += i
-
-        try:
-            avg_time = timedelta(milliseconds=output_time / num_images)
-        except ZeroDivisionError:
-            avg_time = 0.0
-
-        os.chdir(t_dir)
-        with open("avg_time.txt", "a") as out_file:
-            out_file.write(f"compressed_path: {self.compressed_data_path}\n")
-            out_file.write(f"out_path: {self.out_path}\n")
-            out_file.write(f"Average time to predict: {avg_time}")
-
-        os.chdir(return_dir)
-
-        return avg_time
-
-    def output_helper_images(
-            self,
-            output_directory: str,
-            input_image: str,
-            original_image: str,
-            model: models,
-            output_append=None,
-            plot: bool = False,
-    ) -> float:
-        """
-        Utility function for creating model outputs, used when training or lading model for metrics
-        :param output_directory: path to put output
-        :param input_image: path of model input
-        :param original_image: path of corresponding label
-        :param model: trained model
-        :param output_append: items to append to output path
-        :param plot: Boolean - show outputs
-        :return: time (in seconds) to produce model output
-        """
-        if type(output_append) is list:
-            for appendage in output_append:
-                output_directory = os.path.join(output_directory, appendage)
-        elif output_append:
-            output_directory = os.path.join(output_directory, output_append)
-
-        os.makedirs(output_directory)
-        os.chdir(output_directory)
-
-        # Load training image
-        ndims = len(self.input_dims["dims"])
-        dims = {"dims": self.input_dims["dims"][-3:]}
-        if ndims == 4:
-            seq_len = self.input_dims["dims"][0]
-            input_image = self.preprocess_image(input_image, **dims)
-            train_image = np.expand_dims(
-                np.repeat(np.expand_dims(input_image, axis=0), seq_len, axis=0), axis=0
-            )
-        else:
-            input_image = self.preprocess_image(input_image, **dims)
-            train_image = np.expand_dims(input_image, axis=0)
-
-        start = timer()
-        pred_image = model.predict(train_image)
-        end = timer()
-
-        original_image = self.preprocess_image(
-            original_image, do_conversion=False, **dims
-        )
-        save_img("original.png", self.deprocess_image(original_image, plot=plot))
-
-        save_img(
-            "compressed.png",
-            self.deprocess_image(input_image, do_conversion=True, plot=plot),
-        )
-
-        if ndims == 4:
-            try:
-                pred_image = pred_image[:, int(seq_len / 2)]
-            except IndexError:
-                shape = pred_image.shape
-                pred_image = np.reshape(pred_image, shape[-3:])
-        save_img(
-            "trained.png",
-            self.deprocess_image(pred_image, do_conversion=True, plot=plot),
-        )
-
-        return (end - start) * 1000
-
     def output_results_videos(
             self,
             model: models,
@@ -1075,13 +1159,9 @@ class DataManagement:
             self.out_path = os.path.join(self.out_path, self.unique_file(dir_name))
             os.chdir(return_dir)
         else:
-            # training_dims = f"{model.input_shape[3]}x{model.input_shape[2]}"
             self.out_path = os.path.join(self.out_path, model.name, encoder)
             if low_qual:
                 self.out_path = os.path.join(self.out_path, low_qual)
-            # if no_deblock:
-            #   self.out_path = os.path.join(self.out_path, no_deblock)
-            # self.out_path = os.path.join(self.out_path, training_dims)
 
         t_dir = self.output_helper(model, training_data)
 
@@ -1103,7 +1183,8 @@ class DataManagement:
             reverse=True,
         )
         if training_data:
-            qualities = qualities[:4]  # get top 3
+            # Specify what qualities to output. Currently outputs top 4 crfs.
+            qualities = qualities[:4]
         for quality in tqdm(qualities, position=0, leave=True):
             match_string = f"_{quality}.mp4"
             for i, video_file in enumerate(
@@ -1170,20 +1251,20 @@ class DataManagement:
         num_frames = metadata.get("frames")
         mid_frame = int(self.frames / 2)
         frames = np.arange(-mid_frame, num_frames + mid_frame)
-        train_video = self.reprocess_video(
+        train_video = self.preprocess_video_for_results(
             train_video, get_frames=frames, **self.input_dims
         )
         total_time = 0.0
         train_video = np.expand_dims(train_video, axis=0)
         video_size = (num_frames,) + self.input_dims["dims"]
         # (frames, height, width, channels)
-        #predicted_frames = np.zeros(video_size, dtype=self.precision)
-        predicted_frames = train_video[0, :, :, :, :]
+        predicted_frames = np.zeros(video_size, dtype=self.precision)
+        #predicted_frames = train_video[0, :, :, :, :]
 
         for i in range(num_frames):
             start = timer()
-            pred_frame = model.predict(train_video[:, i: i + self.frames, :, :, 0])
-            #pred_frame = model.predict(train_video[:, i: i + self.frames])
+            #pred_frame = model.predict(train_video[:, i: i + self.frames, :, :, 0])
+            pred_frame = model.predict(train_video[:, i: i + self.frames])
             end = timer()
             frames_predicted = pred_frame.shape[1]
             if frames_predicted > 1:
@@ -1198,7 +1279,7 @@ class DataManagement:
         self.deprocess_video(predicted_frames, "trained")
 
         original_video = self.load_video(original_video)
-        original_video = self.reprocess_video(
+        original_video = self.preprocess_video_for_results(
             original_video, get_frames=frames, do_conversion=False, **self.input_dims
         )
         original_video = np.asarray(original_video, dtype=self.precision)
@@ -1243,73 +1324,3 @@ class DataManagement:
             writer.write(frame)
         # Close video writer
         writer.release()
-
-    @staticmethod
-    def get_model_from_string(classname: str):
-        """
-        Return constructor for a model from supplied model name
-        :param classname: Name of model for instantiation
-        :return: Constructor for specified model
-        """
-        print("Classname: " + str(classname))
-        return getattr(sys.modules[__name__].models, classname)
-
-    def load_pickled(self, pickle_file: str = "history") -> dict:
-        """
-        Load history of a model, saved in pickle format
-        :param pickle_file: Name of file to load
-        :return: unpickled data
-        """
-        pickle_path = os.path.join(self.out_path, "Model", f"{pickle_file}.pickle")
-        try:
-            with open(pickle_path, "rb") as p_file:
-                p_data = pickle.load(p_file)
-        except FileNotFoundError:
-            p_data = dict()
-        return p_data
-
-    def load_model_from_path(self, model_path: str):
-        """
-        Load a trained model from  a file
-        :param model_path: Path to saved model file
-        :return: Instance of saved model
-        """
-        self.out_path = os.sep.join(model_path.split(os.sep)[:-2])
-        model = load_model(model_path, compile=False)
-        return model
-
-    @staticmethod
-    def loaded_model(model: models) -> bool:
-        """
-        Check if input is an instance of a model
-        :param model: Supposed instance of models class to check
-        :return: True if model, else false
-        """
-        print(str(type(model)))
-        return type(model) == Model
-
-    def do_saving(self, model: models, history, model_path: str):
-        """
-        Save model and metadata post training
-        :param model: Trained model instance
-        :param history: History of model training
-        :param model_path: Path to save model and metadata at
-        :return:
-        """
-        os.makedirs(model_path)
-        os.chdir(model_path)
-
-        # Save the whole model
-        model.save(f"{model.name}.h5")  # For Keras (TF 1.0)
-        model.save(f"{model.name}.tf")  # TF 2.0
-
-        # Save weights only
-        model.save_weights(f"{model.name}_weights.h5")
-
-        # Save the history
-        with open("history.pickle", "wb") as hist:
-            pickle.dump(history.history, hist, protocol=pickle.HIGHEST_PROTOCOL)
-        # Save the training params
-        with open("params.pickle", "wb") as params:
-            history.params["colourspace"] = self.c_space
-            pickle.dump(history.params, params, protocol=pickle.HIGHEST_PROTOCOL)
