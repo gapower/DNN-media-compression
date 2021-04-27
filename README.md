@@ -8,6 +8,9 @@ The bash files included in FFmpeg/ should be placed in the directory any videos 
 
 run.sh is a sketelon file for running the project, edit as appropriate.
 
+If you encounter any issues running the code, you may want to take a look at my Colab script for running it, which can be found here:
+https://colab.research.google.com/drive/1MsFlEWCPqljkU9cYtcwXY5yEiINRP5_y?authuser=2#scrollTo=xNeSWywUdABi
+
 # Setting up the repo:
 
 ## Install requirements 
